@@ -13,8 +13,33 @@ function requerida(nombre: string, valor: string | undefined): string {
   return valor
 }
 
-export const SUPABASE_URL = () =>
-  requerida('NEXT_PUBLIC_SUPABASE_URL', process.env.NEXT_PUBLIC_SUPABASE_URL)
+/**
+ * URL del proyecto Supabase, pelada.
+ *
+ * El cliente de Supabase agrega `/rest/v1` (o `/auth/v1`, etc.) por su cuenta.
+ * Si la URL ya la trae, las consultas salen a `/rest/v1/rest/v1/...` y Supabase
+ * devuelve vacío sin error visible: la app parece andar pero ningún perfil
+ * existe. Es un error fácil de cometer copiando del dashboard, y carísimo de
+ * diagnosticar, así que se corta acá con un mensaje que dice qué hacer.
+ */
+export const SUPABASE_URL = () => {
+  const valor = requerida(
+    'NEXT_PUBLIC_SUPABASE_URL',
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+  ).trim()
+
+  const ruta = valor.replace(/^https?:\/\/[^/]+/i, '').replace(/\/+$/, '')
+  if (ruta) {
+    throw new Error(
+      `NEXT_PUBLIC_SUPABASE_URL tiene que ser la URL pelada del proyecto, sin ` +
+        `rutas. Sacale "${ruta}" y dejala como ` +
+        `https://<tu-proyecto>.supabase.co — el cliente de Supabase agrega ` +
+        `/rest/v1 solo.`,
+    )
+  }
+
+  return valor.replace(/\/+$/, '')
+}
 
 export const SUPABASE_ANON_KEY = () =>
   requerida('NEXT_PUBLIC_SUPABASE_ANON_KEY', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)

@@ -36,9 +36,30 @@ guarda una URL fija (`tudominio.com/<slug>`) y lo que cambia es la fila.
    Sin este `insert` el login funciona pero el panel rebota con
    "tu cuenta no tiene permisos": tener cuenta y ser admin son cosas distintas.
 
-5. **Copiar las claves** desde *Project Settings → API* al `.env.local` del
-   proyecto (o a las variables de entorno de Vercel):
-   `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+5. **Copiar las claves.** En *Project Settings → API* (según la versión del
+   panel, puede ser una sección aparte llamada *API Keys*) están los dos valores:
+
+   | Variable | De dónde sale | Pinta |
+   |---|---|---|
+   | `NEXT_PUBLIC_SUPABASE_URL` | *Project URL* | `https://<ref>.supabase.co` |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | *Publishable key*, o `anon` `public` en el panel viejo | `sb_publishable_…` o `eyJhbGciOi…` |
+
+   Las dos variantes de clave funcionan: `sb_publishable_…` es el nombre nuevo
+   de la misma clave que antes se llamaba `anon` `public`.
+
+   Van en un archivo **`.env.local`** en la raíz del proyecto (`cp .env.example
+   .env.local` y editás la copia), o en las variables de entorno de Vercel.
+   **No en `.env.example`**, que es la plantilla versionada en el repo.
+
+   Dos errores que cuestan una tarde:
+
+   - **La URL va pelada, sin `/rest/v1`.** El cliente de Supabase agrega esa
+     ruta solo. Si la ponés, las consultas salen a `/rest/v1/rest/v1/...` y
+     Supabase devuelve vacío *sin error*: la app arranca bien pero ningún perfil
+     existe. `lib/env.ts` valida esto y corta el arranque con un mensaje claro.
+   - **Nunca uses la `service_role` ni una `sb_secret_…`.** Esas claves se
+     saltean RLS, y todo lo que empieza con `NEXT_PUBLIC_` se manda al navegador
+     de cada visitante. Este proyecto no necesita ninguna de las dos.
 
 ## Tablas
 
