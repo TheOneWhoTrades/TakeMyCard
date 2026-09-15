@@ -1,0 +1,303 @@
+/* =============================================================================
+   TakeMyCard · estilos globales
+   Mobile-first: la página se abre casi siempre desde un celular, al acercar la
+   tarjeta NFC. CSS plano a propósito, sin framework: menos JS y menos CSS que
+   descargar en una conexión móvil de San Luis.
+   ========================================================================== */
+
+:root {
+  --fondo: #0f1115;
+  --fondo-suave: #171a21;
+  --superficie: #1e222b;
+  --superficie-hover: #262b36;
+  --borde: #2e3441;
+  --texto: #f2f4f8;
+  --texto-suave: #a2abbd;
+  --acento: #4f8cff;
+  --acento-texto: #ffffff;
+  --error: #ff6b6b;
+  --ok: #4ade80;
+  --radio: 14px;
+  --ancho: 30rem;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --fondo: #f5f6f9;
+    --fondo-suave: #ffffff;
+    --superficie: #ffffff;
+    --superficie-hover: #eef1f6;
+    --borde: #dfe3ea;
+    --texto: #12151c;
+    --texto-suave: #5c6579;
+    --acento: #2563eb;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--acento); }
+
+/* --- Página pública --------------------------------------------------------- */
+
+.perfil {
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: 2.5rem 1rem 3rem;
+  /* Respeta el notch y la barra de gestos en iPhone. */
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+  padding-bottom: max(3rem, env(safe-area-inset-bottom));
+}
+
+.perfil__cabecera { text-align: center; }
+
+.perfil__foto,
+.perfil__inicial {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 1rem;
+  display: block;
+  border: 3px solid var(--borde);
+  background: var(--superficie);
+}
+
+.perfil__inicial {
+  display: grid;
+  place-items: center;
+  font-size: 2.75rem;
+  font-weight: 600;
+  color: var(--texto-suave);
+  border-style: solid;
+}
+
+.perfil__nombre {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  letter-spacing: -0.01em;
+}
+
+.perfil__profesion {
+  margin: 0 0 0.75rem;
+  color: var(--acento);
+  font-weight: 500;
+  font-size: 0.98rem;
+}
+
+.perfil__bio {
+  margin: 0 auto;
+  max-width: 26rem;
+  color: var(--texto-suave);
+  font-size: 0.95rem;
+}
+
+.perfil__links {
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.boton {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  padding: 0.95rem 1.1rem;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  color: var(--texto);
+  text-decoration: none;
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  /* Área táctil cómoda: se usa con el pulgar, de pie, en la calle. */
+  min-height: 56px;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.boton:hover { background: var(--superficie-hover); }
+.boton:active { transform: scale(0.985); }
+
+.boton:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.boton__icono { font-size: 1.3rem; line-height: 1; flex-shrink: 0; }
+.boton__texto { flex: 1; min-width: 0; }
+.boton__label { display: block; }
+
+.boton__valor {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--texto-suave);
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
+.boton__estado { font-size: 0.8rem; color: var(--ok); flex-shrink: 0; }
+
+.boton--principal {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: var(--acento-texto);
+  justify-content: center;
+  font-weight: 600;
+  margin-top: 1.25rem;
+}
+
+.boton--principal:hover { background: var(--acento); filter: brightness(1.08); }
+.boton--principal .boton__texto { flex: 0 1 auto; }
+
+.perfil__pie {
+  margin-top: 2.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+}
+
+/* --- Página de error -------------------------------------------------------- */
+
+.aviso {
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: 5rem 1.25rem;
+  text-align: center;
+}
+
+.aviso__emoji { font-size: 3rem; margin: 0 0 1rem; }
+.aviso__titulo { font-size: 1.4rem; margin: 0 0 0.75rem; }
+.aviso__texto { color: var(--texto-suave); margin: 0 0 0.5rem; }
+
+/* --- Panel de administración ------------------------------------------------ */
+/* Deliberadamente sobrio: lo usamos nosotros para cargar clientes rápido. */
+
+.admin {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+
+.admin__barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--borde);
+}
+
+.admin__barra h1 { font-size: 1.25rem; margin: 0; }
+.admin__acciones { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+
+.admin h2 {
+  font-size: 1.05rem;
+  margin: 2rem 0 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--borde);
+}
+
+.tabla { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.tabla th, .tabla td { padding: 0.65rem 0.5rem; text-align: left; border-bottom: 1px solid var(--borde); }
+.tabla th { color: var(--texto-suave); font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.tabla td form { display: inline; }
+
+.campo { display: block; margin-bottom: 1rem; }
+.campo > span { display: block; font-size: 0.85rem; color: var(--texto-suave); margin-bottom: 0.3rem; }
+.campo > small { display: block; font-size: 0.78rem; color: var(--texto-suave); margin-top: 0.25rem; }
+
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='url'],
+input[type='number'],
+select,
+textarea {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  background: var(--fondo-suave);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  font: inherit;
+  /* 16px evita el zoom automático de iOS al enfocar un input. */
+  font-size: 16px;
+}
+
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--acento); outline-offset: -1px; border-color: var(--acento); }
+
+textarea { min-height: 5.5rem; resize: vertical; }
+
+.campo--check { display: flex; align-items: flex-start; gap: 0.6rem; }
+.campo--check input { width: auto; margin-top: 0.25rem; }
+.campo--check span { margin: 0; color: var(--texto); font-size: 0.9rem; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.95rem;
+  border-radius: 8px;
+  border: 1px solid var(--borde);
+  background: var(--superficie);
+  color: var(--texto);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:hover { background: var(--superficie-hover); }
+.btn[disabled] { opacity: 0.6; cursor: progress; }
+.btn--primario { background: var(--acento); border-color: var(--acento); color: #fff; font-weight: 500; }
+.btn--primario:hover { filter: brightness(1.08); background: var(--acento); }
+.btn--peligro { color: var(--error); }
+.btn--mini { padding: 0.3rem 0.55rem; font-size: 0.8rem; }
+
+.fila { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.fila > * { flex: 1 1 12rem; }
+
+.pastilla { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.75rem; border: 1px solid var(--borde); color: var(--texto-suave); }
+.pastilla--ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+.pastilla--off { color: var(--texto-suave); }
+.pastilla--premium { color: #fbbf24; border-color: color-mix(in srgb, #fbbf24 40%, transparent); }
+
+.mensaje { padding: 0.7rem 0.9rem; border-radius: 8px; border: 1px solid var(--borde); margin-bottom: 1rem; font-size: 0.9rem; }
+.mensaje--error { color: var(--error); border-color: color-mix(in srgb, var(--error) 40%, transparent); }
+.mensaje--ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+
+.vacio { color: var(--texto-suave); font-size: 0.9rem; padding: 1.5rem 0; }
+
+.tarjeta { background: var(--fondo-suave); border: 1px solid var(--borde); border-radius: var(--radio); padding: 1.1rem; margin-bottom: 1rem; }
+
+/* --- Login ------------------------------------------------------------------ */
+
+.login { max-width: 22rem; margin: 0 auto; padding: 5rem 1.25rem; }
+.login h1 { font-size: 1.3rem; margin: 0 0 0.35rem; }
+.login p { color: var(--texto-suave); font-size: 0.9rem; margin: 0 0 1.75rem; }
+.login .btn { width: 100%; justify-content: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
