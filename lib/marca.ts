@@ -15,23 +15,42 @@ export const MARCA = {
 } as const
 
 /**
- * WhatsApp de contacto, en formato internacional y sin signos: país + área sin
- * el 0 + 9 + número sin el 15. Para San Luis (área 266) un celular queda
- * 549266XXXXXXX.
+ * WhatsApp de contacto, en formato internacional y sin signos: 54 + 9 +
+ * característica sin el 0 + número sin el 15. Para San Luis (característica
+ * 266) queda 549266XXXXXXX.
  *
- * Se lee de una variable de entorno para poder cambiarlo desde Vercel sin
- * tocar el código, pero tiene un valor por defecto para que el sitio funcione
- * en local sin configurar nada.
+ * Se puede pisar con la variable de entorno NEXT_PUBLIC_WHATSAPP desde Vercel,
+ * para cambiar el número sin tocar el código ni volver a publicar el repo.
  */
-export const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP ?? '5492664000000'
-
-/** ¿Está puesto un número de verdad, o seguimos con el de ejemplo? */
-export const WHATSAPP_CONFIGURADO = WHATSAPP !== '5492664000000'
+// `|| ` y no `?? `: si la variable existe pero está vacía --que es como queda
+// al copiar .env.example sin completarla-- hay que caer igual al número de
+// acá. Con `??` el sitio armaría links a wa.me/ sin destino.
+export const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP?.trim() || '5492664201239'
 
 /**
- * Arma el link de WhatsApp con un mensaje ya escrito. Que el visitante no
- * tenga que redactar nada baja muchísimo la fricción para escribir.
+ * Los mensajes que el visitante encuentra ya escritos al abrir WhatsApp.
+ *
+ * Que no tenga que redactar nada baja muchísimo la fricción para escribir, y
+ * que el texto diga de dónde salió el clic sirve del otro lado: se sabe si la
+ * persona venía mirando un plan concreto antes de contestarle.
  */
+export const MENSAJES = {
+  /** Portada y cierre: el interesado genérico. */
+  general: 'Hola! Estoy interesado en crear mi tarjeta digital. ¿Me contás cómo es?',
+
+  /** Botón de una columna de planes. */
+  plan: (plan: string) =>
+    `Hola! Estoy interesado en crear mi tarjeta digital con el plan ${plan}. ¿Me contás cómo es?`,
+
+  /**
+   * Distinto a propósito: quien escribe desde acá no es un interesado, es
+   * alguien que tiene una tarjeta en la mano y no le funciona.
+   */
+  tarjetaRota: (slug: string) =>
+    `Hola! Acerqué una tarjeta de ${MARCA.nombre} a la dirección /${slug} y no me funciona.`,
+} as const
+
+/** Arma el link de WhatsApp con el mensaje ya cargado. */
 export function linkWhatsapp(mensaje: string): string {
   return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje)}`
 }

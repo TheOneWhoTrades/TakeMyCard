@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Logo, Marca } from '@/components/Logo'
-import { linkWhatsapp, MARCA, PASOS, PLANES, PREGUNTAS, SLUG_DEMO } from '@/lib/marca'
+import { linkWhatsapp, MARCA, MENSAJES, PASOS, PLANES, PREGUNTAS, SLUG_DEMO } from '@/lib/marca'
 
 /**
  * Sitio comercial. Es la página que ve alguien que googlea el proyecto o que
@@ -44,9 +44,7 @@ export default function Home() {
           <div className="portada__acciones">
             <a
               className="btn btn--primario btn--grande"
-              href={linkWhatsapp(
-                `Hola! Vi la página de ${MARCA.nombre} y quiero saber más sobre las tarjetas con NFC.`,
-              )}
+              href={linkWhatsapp(MENSAJES.general)}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -165,9 +163,7 @@ export default function Home() {
 
                 <a
                   className={`btn${plan.destacado ? ' btn--primario' : ''}`}
-                  href={linkWhatsapp(
-                    `Hola! Me interesa el plan ${plan.nombre} de ${MARCA.nombre}.`,
-                  )}
+                  href={linkWhatsapp(MENSAJES.plan(plan.nombre))}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -205,9 +201,7 @@ export default function Home() {
         </p>
         <a
           className="btn btn--grande"
-          href={linkWhatsapp(
-            `Hola! Quiero mi tarjeta de ${MARCA.nombre}. ¿Me contás cómo es?`,
-          )}
+          href={linkWhatsapp(MENSAJES.general)}
           target="_blank"
           rel="noopener noreferrer"
         >
