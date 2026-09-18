@@ -9,6 +9,10 @@ por la base de datos.
 
 ## Qué hace
 
+**Sitio comercial** (`/`) — qué es el producto, cómo funciona, comparación de
+los tres planes y preguntas frecuentes. Todos los botones terminan en un
+WhatsApp con el mensaje ya escrito. Es estático: no consulta la base.
+
 **Página pública** (`/<slug>`) — foto, nombre, profesión y bio; botones de
 contacto ordenables (WhatsApp, redes, web, agenda, ubicación, alias/CBU); botón
 "Guardar contacto" que descarga un `.vcf`. Mobile-first, sin login, con página
@@ -22,7 +26,8 @@ rápido por encima de la estética.
 
 Next.js 16 (App Router) · Supabase (Postgres + Auth + RLS + Storage) · Vercel.
 Sin framework de CSS: la página pública se abre desde un celular en la calle y
-cada kilobyte cuenta.
+cada kilobyte cuenta. La única fuente web es Newsreader, autoalojada por
+`next/font`.
 
 ## Arranque local
 
@@ -57,6 +62,7 @@ app/
   admin/                   Panel: listado, alta, edición, editor de links
   login/                   Login de administradores
 lib/
+  marca.ts                 Textos de venta, planes y WhatsApp (editar acá, no en los componentes)
   links.ts                 Cómo se arma el href de cada tipo de link
   vcard.ts                 Generación de vCard 3.0
   perfil.ts                Lectura del perfil público
@@ -68,6 +74,21 @@ supabase/
 ```
 
 ## Decisiones que conviene conocer antes de tocar el código
+
+**Los textos del sitio comercial viven en `lib/marca.ts`.** Los planes, las
+preguntas frecuentes, el eslogan y el número de WhatsApp están todos en ese
+archivo. Cambiar qué incluye un plan o corregir una redacción no requiere tocar
+JSX: se edita una lista y listo.
+
+**La estética es de diario, y eso se sostiene con variables.** Toda la paleta
+está declarada como custom properties al principio de `app/globals.css`. El
+panel de admin y el login no tienen estilos propios: consumen esas variables, así
+que cambiar el verde de la marca en un solo lugar cambia el sitio entero.
+
+**Los íconos son SVG en línea, no emojis.** Un emoji lo dibuja el sistema
+operativo: viene a todo color y se ve distinto en cada teléfono. Los trazos de
+`components/IconoLink.tsx` heredan el color del texto y funcionan igual en claro
+y en oscuro.
 
 **El `slug` es un compromiso físico.** Es lo único que la tarjeta impresa
 conoce. Cambiarlo invalida todas las tarjetas ya entregadas de ese profesional.

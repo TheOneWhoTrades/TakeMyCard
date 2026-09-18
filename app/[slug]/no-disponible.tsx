@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { linkWhatsapp, MARCA } from '@/lib/marca'
 
 /**
  * Página de error específica para un slug fallido. No es el 404 genérico: quien
@@ -32,7 +33,17 @@ export function PerfilNoDisponible({
       <p className="aviso__texto" style={{ marginTop: '1.5rem' }}>
         ¿Sos el titular de esta tarjeta? Escribinos y lo resolvemos.
       </p>
-      <p style={{ marginTop: '2rem' }}>
+      <p style={{ marginTop: '2rem', display: 'flex', gap: '0.6rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+        <a
+          className="btn btn--primario"
+          href={linkWhatsapp(
+            `Hola! Acerqué una tarjeta de ${MARCA.nombre} a la dirección /${slug} y no funciona.`,
+          )}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Escribirnos
+        </a>
         <Link href="/" className="btn">
           Ir al inicio
         </Link>

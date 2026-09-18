@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
+import Link from 'next/link'
 import { after } from 'next/server'
 import { BotonCopiar } from '@/components/BotonCopiar'
 import { BotonGuardarContacto } from '@/components/BotonGuardarContacto'
+import { IconoLink } from '@/components/IconoLink'
 import { siteUrl } from '@/lib/env'
 import { esFotoOptimizable } from '@/lib/imagen'
-import { esExterno, hrefDeLink, LINK_META } from '@/lib/links'
+import { esExterno, hrefDeLink } from '@/lib/links'
 import { obtenerPerfilPublico } from '@/lib/perfil'
 import { supabasePublico } from '@/lib/supabase/public'
 import { PerfilNoDisponible } from './no-disponible'
@@ -114,13 +116,12 @@ export default async function PaginaPerfil({ params }: Props) {
       {links.length > 0 && (
         <ul className="perfil__links">
           {links.map((link) => {
-            const meta = LINK_META[link.tipo]
             const href = hrefDeLink(link)
 
             if (!href) {
               return (
                 <li key={link.id}>
-                  <BotonCopiar icono={meta.icono} label={link.label} valor={link.valor} />
+                  <BotonCopiar tipo={link.tipo} label={link.label} valor={link.valor} />
                 </li>
               )
             }
@@ -134,9 +135,7 @@ export default async function PaginaPerfil({ params }: Props) {
                   href={href}
                   {...(externo ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                 >
-                  <span className="boton__icono" aria-hidden="true">
-                    {meta.icono}
-                  </span>
+                  <IconoLink tipo={link.tipo} />
                   <span className="boton__texto">
                     <span className="boton__label">{link.label}</span>
                   </span>
@@ -149,7 +148,10 @@ export default async function PaginaPerfil({ params }: Props) {
 
       <footer className="perfil__pie">
         <p>
-          Tarjeta digital de {profile.nombre} · TakeMyCard
+          Tarjeta digital de {profile.nombre} ·{' '}
+          {/* Cada visitante de una tarjeta es alguien que podría querer la suya:
+              este link es la vía de entrada más barata que tiene el negocio. */}
+          <Link href="/">TakeMyCard</Link>
         </p>
       </footer>
     </main>

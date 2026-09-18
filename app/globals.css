@@ -1,36 +1,85 @@
 /* =============================================================================
    TakeMyCard · estilos globales
-   Mobile-first: la página se abre casi siempre desde un celular, al acercar la
-   tarjeta NFC. CSS plano a propósito, sin framework: menos JS y menos CSS que
-   descargar en una conexión móvil de San Luis.
+   ---------------------------------------------------------------------------
+   Dirección estética: diario impreso. Papel tibio en vez de blanco, filetes en
+   vez de sombras, tipografía con serifas y bloques de texto que respetan una
+   grilla. La paleta se corre a verdes y tierras en lugar del blanco y negro de
+   un diario de verdad.
+
+   Sigue siendo CSS plano, sin framework: la página del profesional se abre
+   desde un celular en la calle y cada kilobyte cuenta. Todo el sistema son
+   variables, así que el panel de admin y el login heredan la paleta sin tener
+   estilos propios.
    ========================================================================== */
 
 :root {
-  --fondo: #0f1115;
-  --fondo-suave: #171a21;
-  --superficie: #1e222b;
-  --superficie-hover: #262b36;
-  --borde: #2e3441;
-  --texto: #f2f4f8;
-  --texto-suave: #a2abbd;
-  --acento: #4f8cff;
-  --acento-texto: #ffffff;
-  --error: #ff6b6b;
-  --ok: #4ade80;
-  --radio: 14px;
-  --ancho: 30rem;
+  /* --- Papel y tinta ------------------------------------------------------ */
+  --papel: #f2ede3;         /* Fondo general. Papel de diario, tibio. */
+  --papel-alto: #fbf8f2;    /* Superficies elevadas: tarjetas, inputs. */
+  --papel-hondo: #e8e1d3;   /* Franjas y zonas hundidas. */
+  --tinta: #191714;         /* Negro cálido, nunca #000. */
+  --tinta-media: #4d463c;
+  --tinta-suave: #6f675b;
+  --regla: #cec5b2;         /* Filetes finos. */
+  --regla-fuerte: #191714;  /* Filetes gruesos de sección. */
+
+  /* --- Acentos ------------------------------------------------------------ */
+  --verde: #2c5941;         /* Acento principal. */
+  --verde-hondo: #1d3d2c;
+  --verde-claro: #4a8161;
+  --tierra: #9c5a22;        /* Secundario cálido: destaques, señales. */
+  --ocre: #b08430;
+  --ladrillo: #8f3d2a;      /* Errores y avisos. */
+
+  /* --- Alias que usa el resto del sitio ----------------------------------- */
+  /* El panel, el login y la página del profesional consumen estos nombres.
+     Redefinirlos acá arriba cambia todo el sitio de una sola vez. */
+  --fondo: var(--papel);
+  --fondo-suave: var(--papel-alto);
+  --superficie: var(--papel-alto);
+  --superficie-hover: var(--papel-hondo);
+  --borde: var(--regla);
+  --texto: var(--tinta);
+  --texto-suave: var(--tinta-suave);
+  --acento: var(--verde);
+  --acento-texto: #fbf8f2;
+  --error: var(--ladrillo);
+  --ok: var(--verde-claro);
+
+  /* --- Medidas ------------------------------------------------------------ */
+  /* Esquinas casi rectas: el papel no tiene bordes redondeados. */
+  --radio: 3px;
+  --ancho: 30rem;        /* Columna de la página del profesional. */
+  --ancho-texto: 34rem;  /* Medida cómoda de lectura. */
+  --ancho-sitio: 66rem;  /* Caja del sitio comercial. */
+
+  /* --- Tipografía --------------------------------------------------------- */
+  /* --fuente-serif la inyecta next/font desde el layout. El fallback deja el
+     sitio legible y con el mismo aire si la fuente no llegara a cargar. */
+  --serif: var(--fuente-serif), 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-@media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: dark) {
   :root {
-    --fondo: #f5f6f9;
-    --fondo-suave: #ffffff;
-    --superficie: #ffffff;
-    --superficie-hover: #eef1f6;
-    --borde: #dfe3ea;
-    --texto: #12151c;
-    --texto-suave: #5c6579;
-    --acento: #2563eb;
+    /* Diario leído de noche: se oscurece el papel, no se vira a azul. */
+    --papel: #14120f;
+    --papel-alto: #1d1a15;
+    --papel-hondo: #0d0c0a;
+    --tinta: #f0ebe1;
+    --tinta-media: #bab1a1;
+    --tinta-suave: #9c9384;
+    --regla: #39332a;
+    --regla-fuerte: #6b6250;
+
+    --verde: #7bb894;
+    --verde-hondo: #5d9a76;
+    --verde-claro: #9ed0b2;
+    --tierra: #d69350;
+    --ocre: #d4a94e;
+    --ladrillo: #e08b73;
+
+    --acento-texto: #14120f;
   }
 }
 
@@ -40,78 +89,389 @@ html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
-  background: var(--fondo);
-  color: var(--texto);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  line-height: 1.55;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--serif);
+  font-size: 1.02rem;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
-a { color: var(--acento); }
+a { color: var(--verde); }
 
-/* --- Página pública --------------------------------------------------------- */
+h1, h2, h3 {
+  font-family: var(--serif);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.16;
+  text-wrap: balance;
+}
+
+/* -----------------------------------------------------------------------------
+   Piezas compartidas del lenguaje de diario
+   -------------------------------------------------------------------------- */
+
+/* Volanta: la línea chiquita en versalitas que va arriba de un título. */
+.volanta {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--tierra);
+  margin: 0 0 0.85rem;
+}
+
+/* Filete de sección: la línea gruesa con una fina debajo, como en un diario. */
+.filete {
+  border: 0;
+  border-top: 3px solid var(--regla-fuerte);
+  border-bottom: 1px solid var(--regla);
+  height: 4px;
+  margin: 0 0 2rem;
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.marca__nombre {
+  font-family: var(--serif);
+  font-size: 1.32rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* -----------------------------------------------------------------------------
+   Sitio comercial
+   -------------------------------------------------------------------------- */
+
+.sitio {
+  max-width: var(--ancho-sitio);
+  margin: 0 auto;
+  padding: 0 1.25rem 4rem;
+  padding-left: max(1.25rem, env(safe-area-inset-left));
+  padding-right: max(1.25rem, env(safe-area-inset-right));
+}
+
+/* --- Cabecera / masthead ---------------------------------------------------- */
+
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem 0 1.1rem;
+  border-bottom: 1px solid var(--regla);
+}
+
+.masthead__meta {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--tinta-suave);
+  text-align: right;
+}
+
+/* --- Portada ---------------------------------------------------------------- */
+
+.portada {
+  padding: 3.25rem 0 2.75rem;
+  border-bottom: 3px double var(--regla-fuerte);
+  text-align: center;
+}
+
+.portada__titulo {
+  font-size: clamp(2.6rem, 9vw, 4.6rem);
+  margin: 0 0 1.1rem;
+  letter-spacing: -0.035em;
+}
+
+.portada__bajada {
+  max-width: var(--ancho-texto);
+  margin: 0 auto 2rem;
+  font-size: clamp(1.05rem, 2.6vw, 1.22rem);
+  color: var(--tinta-media);
+}
+
+.portada__acciones {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.portada__nota {
+  margin: 1.5rem auto 0;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  color: var(--tinta-suave);
+}
+
+/* --- Sección genérica ------------------------------------------------------- */
+
+.seccion { padding: 3.25rem 0 0; }
+
+.seccion__titulo {
+  font-size: clamp(1.7rem, 4.5vw, 2.3rem);
+  margin: 0 0 0.6rem;
+}
+
+.seccion__bajada {
+  max-width: var(--ancho-texto);
+  color: var(--tinta-media);
+  margin: 0 0 2rem;
+}
+
+/* --- Columnas de diario ----------------------------------------------------- */
+
+.columnas {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 46rem) {
+  .columnas { grid-template-columns: repeat(3, 1fr); gap: 0; }
+  /* El filete vertical entre columnas, como la separación de un diario. */
+  .columnas > * + * {
+    border-left: 1px solid var(--regla);
+    padding-left: 2rem;
+    margin-left: 2rem;
+  }
+}
+
+.columna__numero {
+  font-family: var(--serif);
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--verde);
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.columna__titulo { font-size: 1.22rem; margin: 0 0 0.5rem; }
+.columna p { margin: 0; color: var(--tinta-media); font-size: 0.97rem; }
+
+/* --- Planes ----------------------------------------------------------------- */
+
+.planes {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+@media (min-width: 52rem) {
+  .planes { grid-template-columns: repeat(3, 1fr); }
+}
+
+.plan {
+  border: 1px solid var(--regla);
+  border-top: 3px solid var(--regla-fuerte);
+  background: var(--papel-alto);
+  padding: 1.6rem 1.35rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* El plan que queremos que elijan: filete verde y un punto más de presencia. */
+.plan--destacado {
+  border-top-color: var(--verde);
+  border-color: var(--verde);
+  position: relative;
+}
+
+.plan__sello {
+  position: absolute;
+  top: -0.75rem;
+  left: 1.25rem;
+  background: var(--verde);
+  color: var(--acento-texto);
+  font-family: var(--sans);
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 0.22rem 0.6rem;
+}
+
+.plan__nombre {
+  font-size: 1.55rem;
+  margin: 0 0 0.35rem;
+}
+
+.plan__para {
+  color: var(--tinta-suave);
+  font-size: 0.92rem;
+  margin: 0 0 1.1rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--regla);
+  min-height: 3.6rem;
+}
+
+.plan__lista {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.25rem;
+  font-size: 0.93rem;
+  flex: 1;
+}
+
+.plan__lista li {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  margin-bottom: 0.55rem;
+  line-height: 1.45;
+}
+
+.plan__marca {
+  flex-shrink: 0;
+  font-family: var(--sans);
+  font-weight: 700;
+  color: var(--verde);
+  line-height: 1.5;
+}
+
+/* Lo que el plan no trae. Se muestra en gris y tachado: la comparación honesta
+   es justamente lo que hace evidente qué plan conviene. */
+.plan__lista li.plan__falta { color: var(--tinta-suave); }
+.plan__lista li.plan__falta .plan__marca { color: var(--tinta-suave); font-weight: 400; }
+.plan__lista li.plan__falta span:last-child { text-decoration: line-through; text-decoration-thickness: 1px; }
+
+.plan__precio {
+  font-family: var(--sans);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--tinta-suave);
+  margin: 0 0 0.85rem;
+}
+
+/* --- Preguntas -------------------------------------------------------------- */
+
+.preguntas { max-width: var(--ancho-texto); }
+
+.pregunta {
+  border-top: 1px solid var(--regla);
+  padding: 1.15rem 0;
+}
+
+.pregunta__p { font-size: 1.08rem; margin: 0 0 0.4rem; }
+.pregunta__r { margin: 0; color: var(--tinta-media); font-size: 0.96rem; }
+
+/* --- Cierre ----------------------------------------------------------------- */
+
+.cierre {
+  margin-top: 3.5rem;
+  padding: 2.75rem 1.5rem;
+  background: var(--verde);
+  color: var(--acento-texto);
+  text-align: center;
+}
+
+.cierre h2 { font-size: clamp(1.6rem, 4.5vw, 2.2rem); margin: 0 0 0.75rem; color: inherit; }
+.cierre p { margin: 0 auto 1.75rem; max-width: 30rem; opacity: 0.92; }
+.cierre .btn { background: var(--acento-texto); color: var(--verde-hondo); border-color: var(--acento-texto); font-weight: 600; }
+.cierre .btn:hover { background: var(--acento-texto); filter: brightness(0.94); }
+
+/* --- Pie -------------------------------------------------------------------- */
+
+.pie {
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+  border-top: 3px double var(--regla-fuerte);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  color: var(--tinta-suave);
+}
+
+.pie a { color: var(--tinta-suave); }
+
+/* -----------------------------------------------------------------------------
+   Página pública del profesional
+   -------------------------------------------------------------------------- */
 
 .perfil {
   max-width: var(--ancho);
   margin: 0 auto;
-  padding: 2.5rem 1rem 3rem;
+  padding: 2.25rem 1rem 3rem;
   /* Respeta el notch y la barra de gestos en iPhone. */
   padding-left: max(1rem, env(safe-area-inset-left));
   padding-right: max(1rem, env(safe-area-inset-right));
   padding-bottom: max(3rem, env(safe-area-inset-bottom));
 }
 
-.perfil__cabecera { text-align: center; }
+.perfil__cabecera {
+  text-align: center;
+  padding-bottom: 1.5rem;
+  border-bottom: 3px double var(--regla-fuerte);
+}
 
 .perfil__foto,
 .perfil__inicial {
-  width: 112px;
-  height: 112px;
-  border-radius: 50%;
+  width: 116px;
+  height: 116px;
+  /* Cuadrada con esquinas mínimas: una foto de diario, no un avatar de app. */
+  border-radius: 2px;
   object-fit: cover;
-  margin: 0 auto 1rem;
+  margin: 0 auto 1.1rem;
   display: block;
-  border: 3px solid var(--borde);
-  background: var(--superficie);
+  border: 1px solid var(--regla);
+  background: var(--papel-alto);
 }
 
 .perfil__inicial {
   display: grid;
   place-items: center;
-  font-size: 2.75rem;
-  font-weight: 600;
-  color: var(--texto-suave);
-  border-style: solid;
+  font-family: var(--serif);
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--verde);
 }
 
 .perfil__nombre {
-  font-size: 1.6rem;
-  font-weight: 700;
-  margin: 0 0 0.25rem;
-  letter-spacing: -0.01em;
+  font-size: 1.85rem;
+  margin: 0 0 0.4rem;
+  letter-spacing: -0.025em;
 }
 
 .perfil__profesion {
-  margin: 0 0 0.75rem;
-  color: var(--acento);
-  font-weight: 500;
-  font-size: 0.98rem;
+  margin: 0 0 0.85rem;
+  font-family: var(--sans);
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--tierra);
 }
 
 .perfil__bio {
   margin: 0 auto;
   max-width: 26rem;
-  color: var(--texto-suave);
-  font-size: 0.95rem;
+  color: var(--tinta-media);
+  font-size: 0.97rem;
 }
 
 .perfil__links {
   list-style: none;
   padding: 0;
-  margin: 2rem 0 0;
+  margin: 1.5rem 0 0;
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: 0.6rem;
 }
 
 .boton {
@@ -119,63 +479,81 @@ a { color: var(--acento); }
   align-items: center;
   gap: 0.85rem;
   width: 100%;
-  padding: 0.95rem 1.1rem;
-  background: var(--superficie);
-  border: 1px solid var(--borde);
+  padding: 0.9rem 1.05rem;
+  background: var(--papel-alto);
+  border: 1px solid var(--regla);
   border-radius: var(--radio);
-  color: var(--texto);
+  color: var(--tinta);
   text-decoration: none;
   font: inherit;
-  font-weight: 500;
+  font-size: 1rem;
   text-align: left;
   cursor: pointer;
   /* Área táctil cómoda: se usa con el pulgar, de pie, en la calle. */
   min-height: 56px;
-  transition: background-color 0.15s ease, transform 0.1s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
-.boton:hover { background: var(--superficie-hover); }
-.boton:active { transform: scale(0.985); }
+.boton:hover { background: var(--papel-hondo); border-color: var(--tinta-suave); }
+.boton:active { background: var(--papel-hondo); }
 
 .boton:focus-visible {
-  outline: 2px solid var(--acento);
+  outline: 2px solid var(--verde);
   outline-offset: 2px;
 }
 
-.boton__icono { font-size: 1.3rem; line-height: 1; flex-shrink: 0; }
+.boton__icono { font-size: 1.25rem; line-height: 1; flex-shrink: 0; }
 .boton__texto { flex: 1; min-width: 0; }
 .boton__label { display: block; }
 
 .boton__valor {
   display: block;
-  font-size: 0.82rem;
-  color: var(--texto-suave);
-  font-weight: 400;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  color: var(--tinta-suave);
   overflow-wrap: anywhere;
 }
 
-.boton__estado { font-size: 0.8rem; color: var(--ok); flex-shrink: 0; }
+.boton__estado {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--verde);
+  flex-shrink: 0;
+}
 
 .boton--principal {
-  background: var(--acento);
-  border-color: var(--acento);
+  background: var(--verde);
+  border-color: var(--verde);
   color: var(--acento-texto);
   justify-content: center;
   font-weight: 600;
-  margin-top: 1.25rem;
+  margin-top: 1.5rem;
 }
 
-.boton--principal:hover { background: var(--acento); filter: brightness(1.08); }
+.boton--principal:hover {
+  background: var(--verde-hondo);
+  border-color: var(--verde-hondo);
+}
+
 .boton--principal .boton__texto { flex: 0 1 auto; }
 
 .perfil__pie {
   margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--regla);
   text-align: center;
-  font-size: 0.8rem;
-  color: var(--texto-suave);
+  font-family: var(--sans);
+  font-size: 0.74rem;
+  color: var(--tinta-suave);
 }
 
-/* --- Página de error -------------------------------------------------------- */
+.perfil__pie a { color: var(--tinta-suave); }
+
+/* -----------------------------------------------------------------------------
+   Avisos (slug inexistente, perfil pausado, 404)
+   -------------------------------------------------------------------------- */
 
 .aviso {
   max-width: var(--ancho);
@@ -184,12 +562,19 @@ a { color: var(--acento); }
   text-align: center;
 }
 
-.aviso__emoji { font-size: 3rem; margin: 0 0 1rem; }
-.aviso__titulo { font-size: 1.4rem; margin: 0 0 0.75rem; }
-.aviso__texto { color: var(--texto-suave); margin: 0 0 0.5rem; }
+.aviso__emoji { font-size: 2.6rem; margin: 0 0 1rem; }
 
-/* --- Panel de administración ------------------------------------------------ */
-/* Deliberadamente sobrio: lo usamos nosotros para cargar clientes rápido. */
+.aviso__titulo {
+  font-size: 1.7rem;
+  margin: 0 0 0.9rem;
+}
+
+.aviso__texto { color: var(--tinta-media); margin: 0 0 0.5rem; }
+
+/* -----------------------------------------------------------------------------
+   Panel de administración
+   Deliberadamente sobrio: lo usamos nosotros para cargar clientes rápido.
+   -------------------------------------------------------------------------- */
 
 .admin {
   max-width: 56rem;
@@ -205,27 +590,53 @@ a { color: var(--acento); }
   flex-wrap: wrap;
   padding-bottom: 1rem;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--borde);
+  border-bottom: 3px double var(--regla-fuerte);
 }
 
-.admin__barra h1 { font-size: 1.25rem; margin: 0; }
+.admin__barra h1 { font-size: 1.35rem; margin: 0; }
 .admin__acciones { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
 
 .admin h2 {
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   margin: 2rem 0 0.75rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--borde);
+  border-bottom: 1px solid var(--regla);
 }
 
-.tabla { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-.tabla th, .tabla td { padding: 0.65rem 0.5rem; text-align: left; border-bottom: 1px solid var(--borde); }
-.tabla th { color: var(--texto-suave); font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.tabla { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.tabla th, .tabla td { padding: 0.65rem 0.5rem; text-align: left; border-bottom: 1px solid var(--regla); }
+
+.tabla th {
+  font-family: var(--sans);
+  color: var(--tinta-suave);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
 .tabla td form { display: inline; }
 
 .campo { display: block; margin-bottom: 1rem; }
-.campo > span { display: block; font-size: 0.85rem; color: var(--texto-suave); margin-bottom: 0.3rem; }
-.campo > small { display: block; font-size: 0.78rem; color: var(--texto-suave); margin-top: 0.25rem; }
+
+.campo > span {
+  display: block;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--tinta-suave);
+  margin-bottom: 0.35rem;
+}
+
+.campo > small {
+  display: block;
+  font-family: var(--sans);
+  font-size: 0.76rem;
+  color: var(--tinta-suave);
+  margin-top: 0.25rem;
+}
 
 input[type='text'],
 input[type='email'],
@@ -236,67 +647,114 @@ select,
 textarea {
   width: 100%;
   padding: 0.6rem 0.7rem;
-  background: var(--fondo-suave);
-  color: var(--texto);
-  border: 1px solid var(--borde);
-  border-radius: 8px;
-  font: inherit;
+  background: var(--papel-alto);
+  color: var(--tinta);
+  border: 1px solid var(--regla);
+  border-radius: var(--radio);
+  font-family: var(--sans);
   /* 16px evita el zoom automático de iOS al enfocar un input. */
   font-size: 16px;
 }
 
-input:focus, select:focus, textarea:focus { outline: 2px solid var(--acento); outline-offset: -1px; border-color: var(--acento); }
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--verde);
+  outline-offset: -1px;
+  border-color: var(--verde);
+}
 
-textarea { min-height: 5.5rem; resize: vertical; }
+textarea { min-height: 5.5rem; resize: vertical; font-family: var(--serif); }
 
 .campo--check { display: flex; align-items: flex-start; gap: 0.6rem; }
-.campo--check input { width: auto; margin-top: 0.25rem; }
-.campo--check span { margin: 0; color: var(--texto); font-size: 0.9rem; }
+.campo--check input { width: auto; margin-top: 0.3rem; }
+.campo--check span { margin: 0; color: var(--tinta); font-size: 0.92rem; text-transform: none; letter-spacing: 0; font-weight: 400; font-family: var(--serif); }
 
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
-  padding: 0.55rem 0.95rem;
-  border-radius: 8px;
-  border: 1px solid var(--borde);
-  background: var(--superficie);
-  color: var(--texto);
-  font: inherit;
-  font-size: 0.9rem;
+  padding: 0.62rem 1.15rem;
+  border-radius: var(--radio);
+  border: 1px solid var(--regla-fuerte);
+  background: transparent;
+  color: var(--tinta);
+  font-family: var(--sans);
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   cursor: pointer;
   text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.btn:hover { background: var(--superficie-hover); }
+.btn:hover { background: var(--tinta); color: var(--papel); }
 .btn[disabled] { opacity: 0.6; cursor: progress; }
-.btn--primario { background: var(--acento); border-color: var(--acento); color: #fff; font-weight: 500; }
-.btn--primario:hover { filter: brightness(1.08); background: var(--acento); }
-.btn--peligro { color: var(--error); }
-.btn--mini { padding: 0.3rem 0.55rem; font-size: 0.8rem; }
+
+.btn--primario {
+  background: var(--verde);
+  border-color: var(--verde);
+  color: var(--acento-texto);
+}
+
+.btn--primario:hover { background: var(--verde-hondo); border-color: var(--verde-hondo); color: var(--acento-texto); }
+
+.btn--peligro { color: var(--ladrillo); border-color: var(--ladrillo); }
+.btn--peligro:hover { background: var(--ladrillo); color: var(--papel-alto); }
+
+.btn--mini { padding: 0.3rem 0.6rem; font-size: 0.76rem; }
+
+.btn--grande { padding: 0.85rem 1.7rem; font-size: 0.95rem; }
 
 .fila { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 .fila > * { flex: 1 1 12rem; }
 
-.pastilla { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.75rem; border: 1px solid var(--borde); color: var(--texto-suave); }
-.pastilla--ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
-.pastilla--off { color: var(--texto-suave); }
-.pastilla--premium { color: #fbbf24; border-color: color-mix(in srgb, #fbbf24 40%, transparent); }
+.pastilla {
+  display: inline-block;
+  padding: 0.16rem 0.5rem;
+  border-radius: var(--radio);
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: 1px solid var(--regla);
+  color: var(--tinta-suave);
+}
 
-.mensaje { padding: 0.7rem 0.9rem; border-radius: 8px; border: 1px solid var(--borde); margin-bottom: 1rem; font-size: 0.9rem; }
-.mensaje--error { color: var(--error); border-color: color-mix(in srgb, var(--error) 40%, transparent); }
-.mensaje--ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+.pastilla--ok { color: var(--verde); border-color: var(--verde); }
+.pastilla--off { color: var(--tinta-suave); }
+.pastilla--premium { color: var(--tierra); border-color: var(--tierra); }
 
-.vacio { color: var(--texto-suave); font-size: 0.9rem; padding: 1.5rem 0; }
+.mensaje {
+  padding: 0.75rem 0.95rem;
+  border-radius: var(--radio);
+  border: 1px solid var(--regla);
+  border-left: 3px solid var(--regla-fuerte);
+  margin-bottom: 1rem;
+  font-size: 0.93rem;
+}
 
-.tarjeta { background: var(--fondo-suave); border: 1px solid var(--borde); border-radius: var(--radio); padding: 1.1rem; margin-bottom: 1rem; }
+.mensaje--error { color: var(--ladrillo); border-left-color: var(--ladrillo); }
+.mensaje--ok { color: var(--verde); border-left-color: var(--verde); }
 
-/* --- Login ------------------------------------------------------------------ */
+.vacio { color: var(--tinta-suave); font-size: 0.93rem; padding: 1.5rem 0; }
+
+.tarjeta {
+  background: var(--papel-alto);
+  border: 1px solid var(--regla);
+  border-radius: var(--radio);
+  padding: 1.15rem;
+  margin-bottom: 1rem;
+}
+
+/* -----------------------------------------------------------------------------
+   Login
+   -------------------------------------------------------------------------- */
 
 .login { max-width: 22rem; margin: 0 auto; padding: 5rem 1.25rem; }
-.login h1 { font-size: 1.3rem; margin: 0 0 0.35rem; }
-.login p { color: var(--texto-suave); font-size: 0.9rem; margin: 0 0 1.75rem; }
-.login .btn { width: 100%; justify-content: center; }
+.login h1 { font-size: 1.6rem; margin: 0 0 0.4rem; }
+.login p { color: var(--tinta-suave); font-size: 0.93rem; margin: 0 0 1.75rem; }
+.login .btn { width: 100%; }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }

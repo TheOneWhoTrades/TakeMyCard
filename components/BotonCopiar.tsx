@@ -1,17 +1,19 @@
 'use client'
 
 import { useState } from 'react'
+import { IconoLink } from '@/components/IconoLink'
+import type { LinkTipo } from '@/lib/types'
 
 /**
  * Alias/CBU no es un enlace navegable: lo que el visitante necesita es pegarlo
  * en su app del banco. Por eso se renderiza como botón de copiar y no como <a>.
  */
 export function BotonCopiar({
-  icono,
+  tipo,
   label,
   valor,
 }: {
-  icono: string
+  tipo: LinkTipo
   label: string
   valor: string
 }) {
@@ -44,9 +46,7 @@ export function BotonCopiar({
 
   return (
     <button type="button" className="boton" onClick={copiar}>
-      <span className="boton__icono" aria-hidden="true">
-        {icono}
-      </span>
+      <IconoLink tipo={tipo} />
       <span className="boton__texto">
         <span className="boton__label">{label}</span>
         <span className="boton__valor">{valor}</span>
