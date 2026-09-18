@@ -1,0 +1,48 @@
+# Verificación automática de cada push y cada PR.
+#
+# Corre lo mismo que se corre a mano antes de publicar: si esto está en verde,
+# el deploy de Vercel no debería romperse.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Formato del vCard
+        run: npm run test:vcard
+
+      - name: Políticas de RLS
+        # El script levanta un Postgres efímero: no toca el proyecto Supabase
+        # real, así que no hacen falta credenciales.
+        run: npm run test:db
+
+      - name: Build de producción
+        # Valores de mentira a propósito. El build no consulta la base; sólo
+        # necesita que las variables existan y tengan forma válida, porque
+        # next.config.ts deriva de ellas el hostname permitido para las fotos.
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://ejemplo.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_ci
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+        run: npm run build
