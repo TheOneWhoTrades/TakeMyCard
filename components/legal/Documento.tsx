@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Marca } from '@/components/Logo'
-import { faltanDatosLegales, LEGAL, MARCA } from '@/lib/marca'
+import { estadoLegal, LEGAL, linkEmail, MARCA } from '@/lib/marca'
 
 /**
  * Marco común de las tres páginas legales.
@@ -46,19 +46,7 @@ export function Documento({
         </p>
         <hr className="filete" />
 
-        {/*
-          Si los datos del titular todavía no están cargados, el aviso sale en
-          la página. Publicar una política de privacidad sin decir quién
-          responde por los datos no sólo no protege: es exactamente lo que la
-          Ley 25.326 exige informar, así que es peor que no tenerla.
-        */}
-        {faltanDatosLegales() && (
-          <div className="mensaje mensaje--error">
-            <strong>Borrador sin publicar.</strong> Faltan cargar los datos del titular
-            (razón social, CUIT, domicilio y email de privacidad) en <code>lib/marca.ts</code>.
-            Este documento no es válido hasta que estén completos.
-          </div>
-        )}
+        <AvisoDeEtapa />
 
         <div className="legal__cuerpo">{children}</div>
 
@@ -75,10 +63,59 @@ export function Documento({
 }
 
 /**
+ * El aviso de arriba de todo, que cambia según en qué etapa está el proyecto.
+ *
+ * Son dos situaciones distintas y merecen dos tratamientos distintos:
+ *
+ *   · `piloto` — el proyecto está en prueba y todavía no vende. Decirlo es
+ *     información verdadera y tranquilizadora, así que va como nota sobria.
+ *     Un cartel de error acá asustaría al visitante de la tarjeta del cliente
+ *     piloto sin motivo.
+ *
+ *   · `incompleto` — alguien apagó el modo piloto sin cargar los datos, es
+ *     decir, salió a vender sin identificar al oferente. Eso sí es un problema,
+ *     y el aviso rojo está para que no pase desapercibido.
+ */
+function AvisoDeEtapa() {
+  const estado = estadoLegal()
+  if (estado === 'completo') return null
+
+  if (estado === 'piloto') {
+    return (
+      <div className="mensaje legal__etapa">
+        <strong>Etapa de prueba.</strong> {MARCA.nombre} está en prueba piloto y todavía
+        no comercializa el servicio. Los datos completos de identificación del responsable
+        (razón social, CUIT y domicilio legal) se publican al lanzamiento comercial.
+        Mientras tanto, el canal de contacto es{' '}
+        <a href={linkEmail()}>{LEGAL.emailPrivacidad}</a>.
+      </div>
+    )
+  }
+
+  return (
+    <div className="mensaje mensaje--error">
+      <strong>Borrador sin publicar.</strong> Faltan cargar los datos del titular (razón
+      social, CUIT y domicilio) en <code>lib/marca.ts</code>, y el modo piloto está
+      apagado. Este documento no es válido hasta que estén completos.
+    </div>
+  )
+}
+
+/**
  * Muestra un dato legal, o un hueco marcado si todavía no se cargó.
  * Evita que el texto diga cosas como "domicilio: null".
+ *
+ * En etapa piloto los textos no llaman a este componente para la identidad del
+ * responsable: usan un párrafo propio que explica la situación. Esto queda para
+ * el email --que sí está cargado-- y para el día que se completen los demás.
  */
 export function DatoLegal({ valor, que }: { valor: string | null; que: string }) {
   if (valor) return <>{valor}</>
   return <mark className="legal__pendiente">[completar {que}]</mark>
+}
+
+/** El email de contacto, siempre como enlace. */
+export function EmailContacto({ asunto }: { asunto?: string }) {
+  if (!LEGAL.emailPrivacidad) return <DatoLegal valor={null} que="el email de contacto" />
+  return <a href={linkEmail(asunto)}>{LEGAL.emailPrivacidad}</a>
 }

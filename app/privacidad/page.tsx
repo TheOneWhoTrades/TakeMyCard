@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import { DatoLegal, Documento } from '@/components/legal/Documento'
-import { LEGAL, MARCA } from '@/lib/marca'
+import { DatoLegal, Documento, EmailContacto } from '@/components/legal/Documento'
+import { esPiloto, LEGAL, MARCA } from '@/lib/marca'
 
 export const metadata = {
   title: 'Política de privacidad',
@@ -31,22 +31,45 @@ export default function PaginaPrivacidad() {
         <li>No vendemos datos a nadie, ni hacemos publicidad con ellos.</li>
         <li>
           Podés pedirnos acceso, corrección o borrado escribiendo a{' '}
-          <DatoLegal valor={LEGAL.emailPrivacidad} que="el email de privacidad" />.
+          <EmailContacto asunto="Ejercicio de derechos sobre mis datos" />.
         </li>
       </ul>
 
       <h2>1. Quién es responsable</h2>
-      <p>
-        El responsable del tratamiento de los datos personales recogidos a través de este
-        sitio es <DatoLegal valor={LEGAL.titular} que="el titular o razón social" />, CUIT{' '}
-        <DatoLegal valor={LEGAL.cuit} que="el CUIT" />, con domicilio en{' '}
-        <DatoLegal valor={LEGAL.domicilio} que="el domicilio" />, {MARCA.provincia} (en
-        adelante, «{MARCA.nombre}», «nosotros»).
-      </p>
-      <p>
-        Para cualquier cuestión vinculada a tus datos personales, el canal de contacto es{' '}
-        <DatoLegal valor={LEGAL.emailPrivacidad} que="el email de privacidad" />.
-      </p>
+      {esPiloto() ? (
+        <>
+          <p>
+            {MARCA.nombre} es un proyecto radicado en {MARCA.provincia}, actualmente en
+            etapa de <strong>prueba piloto</strong>: el servicio todavía no se
+            comercializa y opera con un único cliente, sin cargo. Los datos completos de
+            identificación del responsable (razón social, CUIT y domicilio legal) se
+            publican en esta página al lanzamiento comercial, junto con la versión
+            definitiva de este documento.
+          </p>
+          <p>
+            Eso no cambia nada de lo que se explica más abajo: el tratamiento de datos que
+            hace el sitio es el que está descrito acá, y el canal para preguntar o para
+            ejercer tus derechos funciona desde hoy. Es{' '}
+            <EmailContacto asunto="Consulta de privacidad" />, una casilla atendida por
+            los dos responsables del proyecto.
+          </p>
+        </>
+      ) : (
+        <>
+          <p>
+            El responsable del tratamiento de los datos personales recogidos a través de
+            este sitio es{' '}
+            <DatoLegal valor={LEGAL.titular} que="el titular o razón social" />, CUIT{' '}
+            <DatoLegal valor={LEGAL.cuit} que="el CUIT" />, con domicilio en{' '}
+            <DatoLegal valor={LEGAL.domicilio} que="el domicilio" />, {MARCA.provincia}
+            {' '}(en adelante, «{MARCA.nombre}», «nosotros»).
+          </p>
+          <p>
+            Para cualquier cuestión vinculada a tus datos personales, el canal de contacto
+            es <EmailContacto asunto="Consulta de privacidad" />.
+          </p>
+        </>
+      )}
 
       <h2>2. Qué datos tratamos, según quién seas</h2>
 
@@ -194,8 +217,7 @@ export default function PaginaPrivacidad() {
         Conforme a la Ley 25.326 de Protección de los Datos Personales, tenés derecho a
         acceder a tus datos, rectificarlos si son inexactos, actualizarlos y pedir su
         supresión, así como a oponerte a determinados tratamientos. Para ejercerlos,
-        escribinos a{' '}
-        <DatoLegal valor={LEGAL.emailPrivacidad} que="el email de privacidad" />{' '}
+        escribinos a <EmailContacto asunto="Ejercicio de derechos sobre mis datos" />{' '}
         indicando qué querés y acreditando tu identidad. Te respondemos dentro de los 10
         días corridos para el acceso y de los 5 días hábiles para la rectificación o
         supresión, que son los plazos que fija la ley.

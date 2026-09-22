@@ -882,6 +882,15 @@ textarea { min-height: 5.5rem; resize: vertical; font-family: var(--serif); }
 .mensaje--error { color: var(--ladrillo); border-left-color: var(--ladrillo); }
 .mensaje--ok { color: var(--verde); border-left-color: var(--verde); }
 
+/* Nota de etapa de las páginas legales: informa, no alarma. Ocre y no ladrillo
+   justamente por eso — decir "estamos en prueba piloto" es una aclaración
+   honesta, no un error. */
+.legal__etapa {
+  border-left-color: var(--ocre);
+  color: var(--tinta-media);
+  margin-bottom: 2rem;
+}
+
 .vacio { color: var(--tinta-suave); font-size: 0.93rem; padding: 1.5rem 0; }
 
 .tarjeta {
