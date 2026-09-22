@@ -9,10 +9,12 @@ import type { LinkTipo } from '@/lib/types'
  * en su app del banco. Por eso se renderiza como botón de copiar y no como <a>.
  */
 export function BotonCopiar({
+  id,
   tipo,
   label,
   valor,
 }: {
+  id: string
   tipo: LinkTipo
   label: string
   valor: string
@@ -45,7 +47,7 @@ export function BotonCopiar({
   }
 
   return (
-    <button type="button" className="boton" onClick={copiar}>
+    <button type="button" className="boton" data-link-id={id} onClick={copiar}>
       <IconoLink tipo={tipo} />
       <span className="boton__texto">
         <span className="boton__label">{label}</span>

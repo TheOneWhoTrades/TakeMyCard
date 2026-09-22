@@ -8,12 +8,14 @@
  */
 import { generarVCard } from '@/lib/vcard'
 import { hrefDeLink } from '@/lib/links'
-import type { Link, Profile } from '@/lib/types'
+import type { ContactInfo, Link, Profile } from '@/lib/types'
 
 const profile: Profile = {
-  id: 'p1', slug: 'dra-lucia-fernandez', nombre: 'Dra. Lucía Fernández',
+  id: 'p1', slug: 'dra-lucia-fernandez', codigo_corto: 'k7mp2rt',
+  nombre: 'Dra. Lucía Fernández',
   profesion: 'Odontóloga · Ortodoncia', bio: 'Atención en San Luis; turnos, obras sociales.',
-  foto_url: null, plan: 'basico', auto_edicion_habilitada: false, user_id: null,
+  foto_url: null, portada_url: null, paleta: 'bosque', layout: 'estandar',
+  plan: 'basico', user_id: null,
   activo: true, created_at: '', updated_at: '',
 }
 const mk = (tipo: string, label: string, valor: string, orden: number): Link =>
@@ -34,6 +36,22 @@ console.log('--- HREFS ---')
 for (const l of links) console.log(l.tipo.padEnd(10), '->', hrefDeLink(l))
 
 const vcf = generarVCard(profile, links, { urlPerfil: 'https://takemycard.vercel.app/dra-lucia-fernandez' })
+
+// La misma vCard, pero con contact_info cargado: es el caso del perfil que se
+// administra desde el panel nuevo. Lo que se verifica es que no se dupliquen
+// teléfono, mail ni dirección cuando el dato está en los dos lados.
+const contacto: ContactInfo = {
+  profile_id: 'p1',
+  telefono: '2664123456',
+  email: 'CONTACTO@ejemplo.com.ar',
+  direccion: 'Av. Illia 350, San Luis, Argentina',
+  redes: { LinkedIn: 'https://linkedin.com/in/lucia' },
+  created_at: '', updated_at: '',
+}
+const vcfContacto = generarVCard(profile, links, {
+  urlPerfil: 'https://takemycard.vercel.app/dra-lucia-fernandez',
+  contacto,
+})
 console.log('\n--- VCF (CRLF shown as \\r\\n) ---')
 console.log(JSON.stringify(vcf).replace(/\\r\\n/g, '\\r\\n\n'))
 // Desplegar (unfold) para poder verificar contenido partido en varias lineas.
@@ -54,6 +72,13 @@ const asserts: [string, boolean][] = [
   ['params TYPE solo ASCII', vcf.split('\r\n').filter(l=>l.startsWith('URL;')).every(l => /^URL;TYPE=[A-Za-z0-9-]+:/.test(l))],
   ['punto y coma escapado en bio', vcf.includes('turnos\\, obras sociales')],
   ['sin línea > 75 bytes', vcf.split('\r\n').every(l => Buffer.byteLength(l,'utf8') <= 76)],
+
+  // --- con contact_info cargado ---
+  ['contact_info: un solo TEL', (vcfContacto.match(/\r\nTEL/g) || []).length === 1],
+  ['contact_info: un solo EMAIL', (vcfContacto.match(/\r\nEMAIL/g) || []).length === 1],
+  ['contact_info: un solo ADR', (vcfContacto.match(/\r\nADR/g) || []).length === 1],
+  ['contact_info: red social como URL', vcfContacto.includes('URL;TYPE=LinkedIn:https://linkedin.com/in/lucia')],
+  ['contact_info: sigue siendo CRLF', !/[^\r]\n/.test(vcfContacto)],
 ]
 let fallos = 0
 for (const [n, ok] of asserts) { if(!ok) fallos++; console.log(ok ? 'OK  ' : 'FAIL', n) }

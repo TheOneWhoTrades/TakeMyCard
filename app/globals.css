@@ -402,7 +402,35 @@ h1, h2, h3 {
 
 /* -----------------------------------------------------------------------------
    Página pública del profesional
+   ---------------------------------------------------------------------------
+
+   El color lo elige el cliente entre las seis paletas de lib/paletas.ts, y
+   llega como variables CSS en el `style` del contenedor. Acá se derivan de esas
+   cuatro los tonos intermedios que usa el resto de la hoja, con color-mix: así
+   una paleta nueva son seis valores y no veinte.
+
+   La página del profesional NO sigue el modo oscuro del sistema, a diferencia
+   del resto del sitio. Es deliberado: es una tarjeta, y una tarjeta tiene el
+   color que eligió su dueño. Que la misma tarjeta se vea distinta según la
+   configuración del teléfono del otro sería lo contrario de lo que se compra.
    -------------------------------------------------------------------------- */
+
+/* El marco cubre la pantalla y lleva el color; la columna de adentro sólo
+   maqueta. Separarlos es lo que evita que se vea una franja del color del sitio
+   a los costados del color que eligió el cliente. */
+.perfil-marco {
+  min-height: 100dvh;
+  background: var(--fondo);
+  color: var(--texto);
+
+  --papel-hondo: color-mix(in srgb, var(--fondo) 88%, var(--texto));
+  --tinta-media: color-mix(in srgb, var(--texto) 80%, var(--fondo));
+  --tinta-suave: color-mix(in srgb, var(--texto) 58%, var(--fondo));
+  --regla-fuerte: var(--texto);
+  --tierra: var(--acento);
+  --verde: var(--acento);
+  --verde-hondo: color-mix(in srgb, var(--acento) 84%, #000);
+}
 
 .perfil {
   max-width: var(--ancho);
@@ -413,6 +441,18 @@ h1, h2, h3 {
   padding-right: max(1rem, env(safe-area-inset-right));
   padding-bottom: max(3rem, env(safe-area-inset-bottom));
 }
+
+/* La portada se estira más allá de la caja de texto: es lo que le da el aire
+   de cabecera y no de "imagen pegada arriba". */
+.perfil__portada {
+  position: relative;
+  aspect-ratio: 3 / 1;
+  margin: -2.25rem -1rem 1.5rem;
+  background: var(--papel-hondo);
+  overflow: hidden;
+}
+
+.perfil__portada-img { object-fit: cover; }
 
 .perfil__cabecera {
   text-align: center;
@@ -439,7 +479,15 @@ h1, h2, h3 {
   font-family: var(--serif);
   font-size: 3rem;
   font-weight: 700;
-  color: var(--verde);
+  color: var(--acento);
+}
+
+/* Con portada, la foto monta sobre ella: el gesto clásico del perfil. */
+.perfil--con-portada .perfil__foto,
+.perfil--con-portada .perfil__inicial {
+  margin-top: -3.6rem;
+  border: 3px solid var(--fondo);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
 }
 
 .perfil__nombre {
@@ -455,7 +503,7 @@ h1, h2, h3 {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--tierra);
+  color: var(--acento);
 }
 
 .perfil__bio {
@@ -463,6 +511,102 @@ h1, h2, h3 {
   max-width: 26rem;
   color: var(--tinta-media);
   font-size: 0.97rem;
+}
+
+.perfil__direccion {
+  margin: 1.25rem 0 0;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  color: var(--tinta-suave);
+}
+
+/* --- Variantes de diseño (las del Premium) ------------------------------- */
+
+/* Editorial: la portada a lo ancho y el nombre como título de tapa. */
+.perfil--editorial { max-width: 42rem; }
+.perfil--editorial .perfil__cabecera { text-align: left; }
+.perfil--editorial .perfil__foto,
+.perfil--editorial .perfil__inicial { margin-left: 0; margin-right: 0; }
+.perfil--editorial .perfil__nombre {
+  font-size: clamp(2.1rem, 7vw, 3rem);
+  line-height: 1.05;
+}
+.perfil--editorial .perfil__bio { margin-left: 0; max-width: 34rem; }
+.perfil--editorial .perfil__direccion { text-align: left; }
+
+@media (min-width: 40rem) {
+  .perfil--editorial .perfil__links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+}
+
+/* Retrato: la foto grande al costado. Para quien vende su cara. */
+.perfil--retrato { max-width: 40rem; }
+.perfil--retrato .perfil__cabecera { text-align: left; }
+.perfil--retrato .perfil__direccion { text-align: left; }
+
+@media (min-width: 34rem) {
+  .perfil--retrato .perfil__cabecera {
+    display: grid;
+    grid-template-columns: 11rem 1fr;
+    gap: 1.5rem;
+    align-items: end;
+  }
+  .perfil--retrato .perfil__foto,
+  .perfil--retrato .perfil__inicial {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    margin: 0;
+  }
+  .perfil--retrato .perfil__identidad { padding-bottom: 0.25rem; }
+  .perfil--retrato .perfil__bio { margin-left: 0; }
+}
+
+/* Vidriera: portada alta con el nombre encima y botones en fichas. */
+.perfil--vidriera { max-width: 46rem; }
+
+.perfil--vidriera.perfil--con-portada .perfil__portada {
+  aspect-ratio: 16 / 9;
+  margin-bottom: 0;
+}
+
+.perfil--vidriera .perfil__cabecera {
+  border-bottom: 0;
+  padding: 1.25rem 0 1.5rem;
+}
+
+.perfil--vidriera.perfil--con-portada .perfil__foto,
+.perfil--vidriera.perfil--con-portada .perfil__inicial {
+  margin-top: -4.5rem;
+  width: 132px;
+  height: 132px;
+}
+
+.perfil--vidriera .perfil__nombre { font-size: clamp(1.9rem, 6vw, 2.5rem); }
+
+@media (min-width: 38rem) {
+  .perfil--vidriera .perfil__links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 0.7rem;
+  }
+  .perfil--vidriera .boton {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+    min-height: 6.5rem;
+    padding: 1.1rem;
+  }
+  .perfil--vidriera .boton--principal {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    min-height: 56px;
+  }
 }
 
 .perfil__links {
@@ -550,6 +694,7 @@ h1, h2, h3 {
 }
 
 .perfil__pie a { color: var(--tinta-suave); }
+.perfil__pie-legal { margin: 0.35rem 0 0; }
 
 /* -----------------------------------------------------------------------------
    Avisos (slug inexistente, perfil pausado, 404)
@@ -755,6 +900,595 @@ textarea { min-height: 5.5rem; resize: vertical; font-family: var(--serif); }
 .login h1 { font-size: 1.6rem; margin: 0 0 0.4rem; }
 .login p { color: var(--tinta-suave); font-size: 0.93rem; margin: 0 0 1.75rem; }
 .login .btn { width: 100%; }
+
+
+/* -----------------------------------------------------------------------------
+   Utilidades
+   -------------------------------------------------------------------------- */
+
+/* Visible para un lector de pantalla, invisible en pantalla. Se usa en los
+   radios de las paletas y en los "Sí/No" de la tabla comparativa, donde lo que
+   se ve es un símbolo que por sí solo no dice nada. */
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.masthead__link { text-decoration: none; color: inherit; }
+
+.seccion__pie {
+  margin: 1.5rem 0 0;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  color: var(--tinta-suave);
+}
+
+/* -----------------------------------------------------------------------------
+   Planes y tabla comparativa
+   -------------------------------------------------------------------------- */
+
+.plan { display: flex; flex-direction: column; }
+
+/* Empuja precio y botón al pie de la columna: sin esto, una bajada más larga
+   corre el precio de su plan y las tres columnas dejan de compararse de un
+   vistazo, que es lo único que esta sección tiene que lograr. */
+.plan__para { flex: 1; }
+
+.plan__precio {
+  font-family: var(--serif);
+  font-size: 1.28rem;
+  font-weight: 700;
+  margin: 1.25rem 0 0.15rem;
+  letter-spacing: -0.02em;
+}
+
+.plan__precio-detalle {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  color: var(--tinta-suave);
+  margin: 0 0 1.25rem;
+}
+
+/* En pantallas angostas la tabla se desplaza sola en horizontal en vez de
+   apretar las columnas hasta romperlas. */
+.comparativa__aviso {
+  display: none;
+  font-family: var(--sans);
+  font-size: 0.76rem;
+  color: var(--tinta-suave);
+  margin: 2rem 0 0.5rem;
+}
+
+/* La tabla no entra en un teléfono y se desplaza en horizontal. Que se
+   desplace no se ve: hay que decirlo. */
+@media (max-width: 36rem) {
+  .comparativa__aviso { display: block; }
+  .comparativa__caja { margin-top: 0; }
+}
+
+.comparativa__caja {
+  margin-top: 2.5rem;
+  overflow-x: auto;
+  /* Para que se note que hay más contenido a la derecha. */
+  scrollbar-width: thin;
+}
+
+.comparativa {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+  font-size: 0.93rem;
+}
+
+.comparativa caption { text-align: left; }
+
+.comparativa th,
+.comparativa td {
+  padding: 0.7rem 0.6rem;
+  border-bottom: 1px solid var(--regla);
+  text-align: center;
+  vertical-align: top;
+}
+
+.comparativa thead th {
+  font-family: var(--sans);
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: 3px solid var(--regla-fuerte);
+}
+
+.comparativa tbody th {
+  text-align: left;
+  font-weight: 400;
+  font-family: var(--serif);
+  width: 40%;
+}
+
+.comparativa__nota {
+  display: block;
+  font-family: var(--sans);
+  font-size: 0.74rem;
+  color: var(--tinta-suave);
+  margin-top: 0.2rem;
+}
+
+.comparativa__si { color: var(--verde); font-weight: 700; }
+.comparativa__no { color: var(--tinta-suave); }
+
+.comparativa__texto {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  color: var(--tinta-media);
+}
+
+/* -----------------------------------------------------------------------------
+   Formulario de contacto de la home
+   -------------------------------------------------------------------------- */
+
+.contacto { max-width: var(--ancho-texto); }
+.contacto__campos { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.contacto__campos > * { flex: 1 1 14rem; }
+.contacto .btn { width: 100%; }
+
+.contacto__nota {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  color: var(--tinta-suave);
+  margin: 0.75rem 0 0;
+}
+
+/* -----------------------------------------------------------------------------
+   Pie del sitio
+   -------------------------------------------------------------------------- */
+
+.pie__links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* -----------------------------------------------------------------------------
+   Páginas legales
+   -------------------------------------------------------------------------- */
+
+.legal {
+  /* Centrada y un poco más ancha que la medida de lectura pura: son textos
+     largos, con tablas y listas, que se leen enteros cuando alguien desconfía. */
+  max-width: 38rem;
+  margin-inline: auto;
+  padding: 2.5rem 0 4rem;
+}
+
+.legal__titulo { font-size: clamp(1.9rem, 6vw, 2.6rem); margin: 0 0 0.75rem; }
+
+.legal__bajada {
+  font-size: 1.08rem;
+  color: var(--tinta-media);
+  margin: 0 0 0.75rem;
+}
+
+.legal__vigencia {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  color: var(--tinta-suave);
+  margin: 0 0 1.5rem;
+}
+
+.legal__cuerpo h2 {
+  font-size: 1.28rem;
+  margin: 2.5rem 0 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--regla);
+}
+
+.legal__cuerpo h3 { font-size: 1.05rem; margin: 1.75rem 0 0.5rem; }
+.legal__cuerpo p { margin: 0 0 1rem; }
+.legal__cuerpo ul { margin: 0 0 1.25rem; padding-left: 1.2rem; }
+.legal__cuerpo li { margin-bottom: 0.5rem; }
+.legal__cuerpo code { font-size: 0.88em; }
+
+/* Los datos legales que faltan cargar se ven a la legua, no en letra chica. */
+.legal__pendiente {
+  background: var(--ocre);
+  color: var(--papel-alto);
+  padding: 0.05em 0.35em;
+  border-radius: 2px;
+  font-family: var(--sans);
+  font-size: 0.85em;
+}
+
+.tabla-legal {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 0 0 1.5rem;
+  display: block;
+  overflow-x: auto;
+}
+
+.tabla-legal th,
+.tabla-legal td {
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--regla);
+  text-align: left;
+  vertical-align: top;
+}
+
+.tabla-legal thead th {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--tinta-suave);
+  border-bottom: 2px solid var(--regla-fuerte);
+}
+
+.legal__nav {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  font-family: var(--sans);
+  font-size: 0.85rem;
+}
+
+/* -----------------------------------------------------------------------------
+   Paneles: piezas nuevas
+   -------------------------------------------------------------------------- */
+
+.admin__marca { text-decoration: none; color: inherit; }
+.marca--chica .marca__nombre { font-size: 1.1rem; }
+
+.admin__menu {
+  display: flex;
+  gap: 1.25rem;
+  font-family: var(--sans);
+  font-size: 0.86rem;
+  font-weight: 600;
+  margin: -0.75rem 0 1.5rem;
+}
+
+.login__pie {
+  margin-top: 2rem;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+}
+
+.pastilla--basico  { color: var(--tinta-suave); }
+.pastilla--plus    { color: var(--verde); border-color: var(--verde); }
+.pastilla--premium { color: var(--tierra); border-color: var(--tierra); }
+
+.codigo-chip {
+  font-family: var(--sans);
+  font-size: 1.05rem;
+  font-weight: 600;
+  word-break: break-all;
+  margin: 0 0 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--papel-hondo);
+  border-radius: var(--radio);
+}
+
+.fila--envuelve > * { flex: 1 1 9rem; }
+
+/* --- Pestañas del ingreso ------------------------------------------------ */
+
+.pestañas {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--regla);
+}
+
+.pestaña {
+  flex: 1;
+  padding: 0.6rem 0.5rem;
+  background: none;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  font-family: var(--sans);
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--tinta-suave);
+  cursor: pointer;
+}
+
+.pestaña--activa { color: var(--tinta); border-bottom-color: var(--verde); }
+
+/* --- Selector de paleta y de layout -------------------------------------- */
+
+.paletas { border: 0; padding: 0; margin: 0 0 1rem; }
+
+.paletas legend {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--tinta-suave);
+  padding: 0;
+  margin-bottom: 0.5rem;
+}
+
+.paletas > small {
+  display: block;
+  font-family: var(--sans);
+  font-size: 0.76rem;
+  color: var(--tinta-suave);
+  margin-top: 0.5rem;
+}
+
+.paletas__grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: 0.5rem;
+}
+
+.paleta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid;
+  border-radius: var(--radio);
+  cursor: pointer;
+}
+
+.paleta--activa { outline: 2px solid var(--verde); outline-offset: 1px; }
+
+/* El foco por teclado tiene que verse aunque el radio esté oculto. */
+.paleta:has(input:focus-visible) { outline: 2px solid var(--verde); outline-offset: 2px; }
+
+.paleta__muestra {
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.paleta__nombre {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.layouts { display: grid; gap: 0.5rem; }
+
+.layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--regla);
+  border-radius: var(--radio);
+  cursor: pointer;
+}
+
+.layout input { width: auto; margin-top: 0.25rem; }
+.layout strong { display: block; font-family: var(--sans); font-size: 0.88rem; }
+.layout small { color: var(--tinta-suave); font-family: var(--sans); font-size: 0.78rem; }
+.layout:has(input:checked) { border-color: var(--verde); outline: 1px solid var(--verde); }
+
+/* --- Subida y recorte de fotos ------------------------------------------- */
+
+.subir { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.subir__acciones { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.subir__previa {
+  object-fit: cover;
+  border: 1px solid var(--regla);
+  border-radius: var(--radio);
+}
+
+.subir__previa--redonda { border-radius: 50%; }
+
+.subir__vacio {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--regla);
+  border-radius: var(--radio);
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  color: var(--tinta-suave);
+  text-align: center;
+}
+
+/* El <input type="file"> va oculto dentro de un <label> con pinta de botón:
+   el control nativo no se puede estilar y se ve distinto en cada navegador. */
+.subir label.btn { cursor: pointer; }
+
+.recorte {
+  border: 1px solid var(--regla);
+  border-radius: var(--radio);
+  padding: 0.9rem;
+  background: var(--papel-hondo);
+}
+
+.recorte__lienzo {
+  display: block;
+  max-width: 100%;
+  border-radius: var(--radio);
+  /* `touch-action: none` para que arrastrar encuadre la foto en vez de
+     desplazar la página en el teléfono, que es donde más se usa. */
+  touch-action: none;
+  cursor: grab;
+  background: #fff;
+}
+
+.recorte__lienzo--redondo { border-radius: 50%; }
+.recorte__lienzo:active { cursor: grabbing; }
+
+.recorte__zoom { display: block; margin: 0.75rem 0 0.25rem; }
+
+.recorte__zoom span {
+  display: block;
+  font-family: var(--sans);
+  font-size: 0.74rem;
+  color: var(--tinta-suave);
+  margin-bottom: 0.2rem;
+}
+
+.recorte__zoom input { width: 100%; }
+
+.recorte__ayuda {
+  font-family: var(--sans);
+  font-size: 0.76rem;
+  color: var(--tinta-suave);
+  margin: 0 0 0.75rem;
+}
+
+/* --- Editor con vista previa --------------------------------------------- */
+
+.editor { display: grid; gap: 1.5rem; }
+.editor__campos { min-width: 0; }
+
+@media (min-width: 62rem) {
+  .editor { grid-template-columns: 1fr 20rem; align-items: start; }
+  /* La previa acompaña el scroll: se edita mirándola. */
+  .editor__previa { position: sticky; top: 1.5rem; }
+}
+
+.previa {
+  border: 1px solid var(--regla);
+  border-radius: var(--radio);
+  overflow: hidden;
+  background: var(--fondo);
+  color: var(--texto);
+}
+
+.previa__portada { display: block; width: 100%; aspect-ratio: 3/1; object-fit: cover; }
+.previa__cuerpo { padding: 1rem; text-align: center; }
+
+.previa__foto,
+.previa__inicial {
+  width: 64px;
+  height: 64px;
+  border-radius: 2px;
+  object-fit: cover;
+  margin: 0 auto 0.6rem;
+  display: block;
+  border: 1px solid var(--borde);
+}
+
+.previa__inicial {
+  display: grid;
+  place-items: center;
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--acento);
+}
+
+.previa__nombre { font-family: var(--serif); font-size: 1.1rem; font-weight: 700; margin: 0 0 0.25rem; }
+
+.previa__profesion {
+  font-family: var(--sans);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--acento);
+  margin: 0 0 0.5rem;
+}
+
+.previa__bio {
+  font-size: 0.82rem;
+  margin: 0 0 0.75rem;
+  color: color-mix(in srgb, var(--texto) 78%, var(--fondo));
+}
+
+.previa__boton {
+  display: block;
+  padding: 0.55rem;
+  background: var(--acento);
+  color: var(--acento-texto);
+  border-radius: var(--radio);
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.previa__nota {
+  font-family: var(--sans);
+  font-size: 0.74rem;
+  color: var(--tinta-suave);
+  margin: 0.5rem 0 0;
+}
+
+/* --- Estadísticas --------------------------------------------------------- */
+
+.periodos { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+
+.numeros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.numero {
+  border: 1px solid var(--regla);
+  border-top: 3px solid var(--regla-fuerte);
+  border-radius: var(--radio);
+  padding: 1rem;
+  background: var(--papel-alto);
+}
+
+.numero__valor {
+  display: block;
+  font-family: var(--serif);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.numero__etiqueta {
+  display: block;
+  font-family: var(--sans);
+  font-size: 0.74rem;
+  color: var(--tinta-suave);
+  margin-top: 0.3rem;
+}
+
+.ranking { list-style: none; padding: 0; margin: 0; }
+
+.ranking__fila {
+  display: grid;
+  grid-template-columns: minmax(6rem, 14rem) 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--regla);
+}
+
+.ranking__etiqueta { font-size: 0.93rem; overflow-wrap: anywhere; }
+
+.ranking__barra {
+  height: 0.6rem;
+  background: var(--papel-hondo);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.ranking__relleno { display: block; height: 100%; background: var(--verde); }
+
+.ranking__valor {
+  font-family: var(--sans);
+  font-size: 0.86rem;
+  font-weight: 600;
+  min-width: 2.5rem;
+  text-align: right;
+}
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }

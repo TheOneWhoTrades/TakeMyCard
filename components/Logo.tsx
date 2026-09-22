@@ -1,6 +1,12 @@
+import { MARCA } from '@/lib/marca'
+
 /**
- * Logo de TakeMyCard: la palabra «Card» dentro de una tarjeta, con el símbolo
- * de NFC al lado.
+ * Logo: la palabra «Card» dentro de una tarjeta, con el símbolo de NFC al lado.
+ *
+ * La palabra «Card» es parte del dibujo y no del nombre --así está definido el
+ * logo-- por eso está escrita acá. Todo lo demás (el nombre que acompaña al
+ * símbolo, el texto alternativo) sale de MARCA, para que un cambio de nombre no
+ * deje restos.
  *
  * Va como SVG en línea y no como archivo de imagen por tres razones: hereda el
  * color del texto (`currentColor`), así que funciona igual sobre papel claro
@@ -24,7 +30,7 @@ export function Logo({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
-      aria-label="TakeMyCard"
+      aria-label={MARCA.nombre}
     >
       {/* La tarjeta. Proporción 85.6 x 54 mm, la real de una tarjeta de crédito. */}
       <rect
@@ -80,7 +86,7 @@ export function Marca({ className }: { className?: string }) {
   return (
     <span className={className}>
       <Logo ancho={34} />
-      <span className="marca__nombre">TakeMyCard</span>
+      <span className="marca__nombre">{MARCA.nombre}</span>
     </span>
   )
 }

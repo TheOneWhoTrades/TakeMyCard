@@ -1,15 +1,8 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
-import Link from 'next/link'
-import { after } from 'next/server'
-import { BotonCopiar } from '@/components/BotonCopiar'
-import { BotonGuardarContacto } from '@/components/BotonGuardarContacto'
-import { IconoLink } from '@/components/IconoLink'
+import { Perfil } from '@/components/perfil/Perfil'
 import { siteUrl } from '@/lib/env'
-import { esFotoOptimizable } from '@/lib/imagen'
-import { esExterno, hrefDeLink } from '@/lib/links'
 import { obtenerPerfilPublico } from '@/lib/perfil'
-import { supabasePublico } from '@/lib/supabase/public'
+import { CAPACIDADES } from '@/lib/types'
 import { PerfilNoDisponible } from './no-disponible'
 
 // El contenido lo administramos nosotros y cambia poco. Se cachea 60 segundos:
@@ -48,6 +41,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const titulo = profile.profesion ? `${profile.nombre} · ${profile.profesion}` : profile.nombre
   const descripcion = profile.bio ?? `Contacto de ${profile.nombre}.`
 
+  // Para compartir se prefiere la portada: es apaisada, que es la forma que
+  // piden WhatsApp y las redes. La foto de perfil es cuadrada y sale recortada.
+  const imagenes = [
+    CAPACIDADES[profile.plan].portada ? profile.portada_url : null,
+    profile.foto_url,
+  ].filter((url): url is string => Boolean(url))
+
   return {
     title: titulo,
     description: descripcion,
@@ -57,7 +57,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: titulo,
       description: descripcion,
       url: `${siteUrl()}/${profile.slug}`,
-      images: profile.foto_url ? [profile.foto_url] : undefined,
+      images: imagenes.length ? imagenes : undefined,
+    },
+    twitter: {
+      card: imagenes.length ? 'summary_large_image' : 'summary',
+      title: titulo,
+      description: descripcion,
     },
   }
 }
@@ -73,87 +78,14 @@ export default async function PaginaPerfil({ params }: Props) {
     return <PerfilNoDisponible estado={resultado.estado} slug={slug} />
   }
 
-  const { profile, links } = resultado
-
-  // Se registra después de mandar la respuesta: la visita nunca demora la página.
-  // Ojo: la página se cachea, así que esto corre cuando se regenera, no en cada
-  // visita: el conteo es una cota inferior. Se eligió así a propósito — que la
-  // tarjeta abra rápido es el requisito del producto; la analítica no lo es.
-  after(async () => {
-    try {
-      await supabasePublico().from('page_views').insert({ profile_id: profile.id })
-    } catch {
-      // La analítica no es prioridad: si falla, la página igual se sirvió bien.
-    }
-  })
-
+  // La visita se cuenta desde el navegador (ver components/RastreoPerfil.tsx).
+  // Contarla acá daba una cota inferior: esta página está cacheada, así que el
+  // render ocurre una vez por regeneración, no una por visita.
   return (
-    <main className="perfil">
-      <header className="perfil__cabecera">
-        {profile.foto_url ? (
-          <Image
-            className="perfil__foto"
-            src={profile.foto_url}
-            alt={`Foto de ${profile.nombre}`}
-            width={112}
-            height={112}
-            priority
-            unoptimized={!esFotoOptimizable(profile.foto_url)}
-          />
-        ) : (
-          <div className="perfil__inicial" aria-hidden="true">
-            {profile.nombre.trim().charAt(0).toUpperCase()}
-          </div>
-        )}
-
-        <h1 className="perfil__nombre">{profile.nombre}</h1>
-        {profile.profesion && <p className="perfil__profesion">{profile.profesion}</p>}
-        {profile.bio && <p className="perfil__bio">{profile.bio}</p>}
-      </header>
-
-      <BotonGuardarContacto slug={profile.slug} nombre={profile.nombre} />
-
-      {links.length > 0 && (
-        <ul className="perfil__links">
-          {links.map((link) => {
-            const href = hrefDeLink(link)
-
-            if (!href) {
-              return (
-                <li key={link.id}>
-                  <BotonCopiar tipo={link.tipo} label={link.label} valor={link.valor} />
-                </li>
-              )
-            }
-
-            const externo = esExterno(href)
-
-            return (
-              <li key={link.id}>
-                <a
-                  className="boton"
-                  href={href}
-                  {...(externo ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                >
-                  <IconoLink tipo={link.tipo} />
-                  <span className="boton__texto">
-                    <span className="boton__label">{link.label}</span>
-                  </span>
-                </a>
-              </li>
-            )
-          })}
-        </ul>
-      )}
-
-      <footer className="perfil__pie">
-        <p>
-          Tarjeta digital de {profile.nombre} ·{' '}
-          {/* Cada visitante de una tarjeta es alguien que podría querer la suya:
-              este link es la vía de entrada más barata que tiene el negocio. */}
-          <Link href="/">TakeMyCard</Link>
-        </p>
-      </footer>
-    </main>
+    <Perfil
+      profile={resultado.profile}
+      links={resultado.links}
+      contacto={resultado.contacto}
+    />
   )
 }

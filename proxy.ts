@@ -2,12 +2,19 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 /**
- * Refresca el token de Supabase en cada request para que la sesión del panel no
- * expire mientras se usa, y corta el paso a /admin sin sesión.
+ * Refresca el token de Supabase en cada request para que la sesión de los
+ * paneles no expire mientras se usa, y corta el paso a /admin y /panel sin
+ * sesión.
  *
  * Esto es sólo comodidad de UX: la autorización de verdad la hacen las
  * políticas de RLS en la base.
  */
+
+/** Rutas que exigen sesión, con el login que le corresponde a cada una. */
+const PROTEGIDAS: { prefijo: string; login: string }[] = [
+  { prefijo: '/admin', login: '/login' },
+  { prefijo: '/panel', login: '/ingresar' },
+]
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
 
@@ -32,10 +39,17 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user && request.nextUrl.pathname.startsWith('/admin')) {
+  const protegida = PROTEGIDAS.find((r) => request.nextUrl.pathname.startsWith(r.prefijo))
+
+  if (!user && protegida) {
     const login = request.nextUrl.clone()
-    login.pathname = '/login'
+    login.pathname = protegida.login
     login.searchParams.set('next', request.nextUrl.pathname)
+    // Se limpia todo lo demás: sin esto, los parámetros de la URL original
+    // viajan al login y pueden terminar en los registros del servidor.
+    for (const clave of [...login.searchParams.keys()]) {
+      if (clave !== 'next') login.searchParams.delete(clave)
+    }
     return NextResponse.redirect(login)
   }
 
@@ -43,7 +57,8 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Sólo donde hace falta sesión. Las páginas públicas /[slug] quedan fuera para
-  // que sirvan sin el costo de una verificación de auth por request.
-  matcher: ['/admin/:path*', '/login'],
+  // Sólo donde hace falta sesión. Las páginas públicas /[slug] y el enlace corto
+  // /t/... quedan fuera para que sirvan sin el costo de una verificación de auth
+  // por request: son las que tienen que abrir instantáneo con la tarjeta.
+  matcher: ['/admin/:path*', '/panel/:path*', '/acceso/:path*', '/login', '/ingresar'],
 }

@@ -1,6 +1,8 @@
+import Link from 'next/link'
+import { MARCA } from '@/lib/marca'
 import { FormularioLogin } from './formulario'
 
-export const metadata = { title: 'Ingresar · TakeMyCard', robots: { index: false } }
+export const metadata = { title: 'Administración', robots: { index: false } }
 
 export default async function PaginaLogin({
   searchParams,
@@ -11,7 +13,7 @@ export default async function PaginaLogin({
 
   return (
     <main className="login">
-      <h1>Panel TakeMyCard</h1>
+      <h1>{MARCA.nombre}</h1>
       <p>Acceso de administradores.</p>
 
       {error === 'no-admin' && (
@@ -22,6 +24,10 @@ export default async function PaginaLogin({
       )}
 
       <FormularioLogin next={next ?? '/admin'} />
+
+      <p className="login__pie">
+        ¿Sos cliente y venís a editar tu página? <Link href="/ingresar">Entrá por acá</Link>.
+      </p>
     </main>
   )
 }

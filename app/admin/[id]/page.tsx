@@ -1,10 +1,29 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { EditorContacto } from '@/components/EditorContacto'
+import { EditorLinks } from '@/components/EditorLinks'
+import { Metricas, periodoValido } from '@/components/Metricas'
 import { requerirAdmin } from '@/lib/auth'
-import type { Link as LinkPerfil, Profile } from '@/lib/types'
-import { EditorLinks } from '../EditorLinks'
+import { siteUrl } from '@/lib/env'
+import {
+  CAPACIDADES,
+  type Card,
+  type ContactInfo,
+  type Link as LinkPerfil,
+  type Metrica,
+  type Profile,
+} from '@/lib/types'
+import { EditorTarjetas } from '../EditorTarjetas'
 import { FormularioPerfil } from '../FormularioPerfil'
-import { eliminarPerfil } from '../actions'
+import { VincularCuenta } from '../VincularCuenta'
+import {
+  actualizarLink,
+  crearLink,
+  eliminarLink,
+  eliminarPerfil,
+  guardarContacto,
+  moverLink,
+} from '../actions'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,10 +32,10 @@ export default async function PaginaEditarPerfil({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ creado?: string }>
+  searchParams: Promise<{ creado?: string; dias?: string }>
 }) {
   const { id } = await params
-  const { creado } = await searchParams
+  const { creado, dias: diasParam } = await searchParams
   const { supabase } = await requerirAdmin()
 
   const { data: profile } = await supabase
@@ -27,18 +46,30 @@ export default async function PaginaEditarPerfil({
 
   if (!profile) notFound()
 
-  const { data: links } = await supabase
-    .from('links')
-    .select('*')
-    .eq('profile_id', profile.id)
-    .order('orden', { ascending: true })
-    .order('created_at', { ascending: true })
-    .returns<LinkPerfil[]>()
+  const dias = periodoValido(diasParam)
 
-  const { count: visitas } = await supabase
-    .from('page_views')
-    .select('*', { count: 'exact', head: true })
-    .eq('profile_id', profile.id)
+  const [{ data: links }, { data: contacto }, { data: cards }, { data: metricas }] =
+    await Promise.all([
+      supabase
+        .from('links')
+        .select('*')
+        .eq('profile_id', profile.id)
+        .order('orden', { ascending: true })
+        .order('created_at', { ascending: true })
+        .returns<LinkPerfil[]>(),
+      supabase
+        .from('contact_info')
+        .select('*')
+        .eq('profile_id', profile.id)
+        .maybeSingle<ContactInfo>(),
+      supabase
+        .from('cards')
+        .select('*')
+        .eq('profile_id', profile.id)
+        .order('created_at', { ascending: true })
+        .returns<Card[]>(),
+      supabase.rpc('metricas_perfil', { p_profile_id: profile.id, p_dias: dias }),
+    ])
 
   return (
     <>
@@ -46,28 +77,88 @@ export default async function PaginaEditarPerfil({
         <Link href="/admin">← Volver al listado</Link>
       </p>
 
-      {creado && <div className="mensaje mensaje--ok">Perfil creado. Ahora cargale los links.</div>}
+      {creado && (
+        <div className="mensaje mensaje--ok">
+          Perfil creado. Ahora cargale las fotos y los botones.
+        </div>
+      )}
 
       <div className="admin__barra" style={{ border: 0 }}>
         <h2 style={{ border: 0, margin: 0 }}>{profile.nombre}</h2>
         <div className="admin__acciones">
-          <span className="pastilla">{visitas ?? 0} visitas</span>
-          <a href={`/${profile.slug}`} target="_blank" rel="noopener noreferrer" className="btn btn--mini">
+          <span className={`pastilla pastilla--${profile.plan}`}>{profile.plan}</span>
+          <a
+            href={`/${profile.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn--mini"
+          >
             Ver página ↗
           </a>
         </div>
       </div>
 
+      {/* El código corto es lo que se graba en el chip. Se muestra arriba de
+          todo porque es el dato que hace falta a la hora de programar la
+          tarjeta, que es cuando se abre esta pantalla. */}
+      <div className="tarjeta">
+        <h3>Qué grabar en el chip</h3>
+        <p className="codigo-chip">
+          {siteUrl()}/t/{profile.codigo_corto}
+        </p>
+        <p className="vacio" style={{ padding: 0 }}>
+          No grabes <code>/{profile.slug}</code> directo: el código corto es lo que nos
+          deja cambiar de dominio o de slug sin romper las tarjetas ya entregadas.
+        </p>
+      </div>
+
       <FormularioPerfil profile={profile} />
 
-      <EditorLinks profileId={profile.id} links={links ?? []} />
+      <h2>Botones</h2>
+      <EditorLinks
+        profileId={profile.id}
+        links={links ?? []}
+        acciones={{
+          crear: crearLink,
+          actualizar: actualizarLink,
+          eliminar: eliminarLink,
+          mover: moverLink,
+        }}
+      />
+
+      <h2>Contacto</h2>
+      <EditorContacto
+        contacto={contacto ?? null}
+        guardar={guardarContacto}
+        profileId={profile.id}
+      />
+
+      <h2>Acceso del cliente</h2>
+      <VincularCuenta profileId={profile.id} vinculada={Boolean(profile.user_id)} />
+
+      <h2>Tarjetas físicas</h2>
+      <EditorTarjetas profileId={profile.id} cards={cards ?? []} />
+
+      <h2>Estadísticas</h2>
+      <p className="vacio" style={{ padding: 0, marginBottom: '1rem' }}>
+        Los eventos se registran en todos los planes.{' '}
+        {CAPACIDADES[profile.plan].analytics
+          ? 'Este cliente también las ve desde su panel.'
+          : 'Este cliente no las ve: el panel de estadísticas es del Premium. Si sube de plan, tiene el historial desde el día uno.'}
+      </p>
+      <Metricas
+        metricas={(metricas as Metrica[] | null) ?? []}
+        dias={dias}
+        base={`/admin/${profile.id}`}
+      />
 
       <h2>Zona peligrosa</h2>
       <div className="tarjeta">
         <p className="vacio" style={{ padding: 0, marginBottom: '0.75rem' }}>
-          Eliminar borra el perfil y todos sus links para siempre. Si la tarjeta física ya
-          está entregada, conviene <strong>pausar</strong> en vez de eliminar: el slug queda
-          reservado y la página muestra un aviso.
+          Eliminar borra el perfil, sus links, sus datos de contacto, sus estadísticas y
+          su registro de tarjetas, para siempre. Si la tarjeta física ya está entregada,
+          conviene <strong>pausar</strong> en vez de eliminar: la dirección queda
+          reservada y la página muestra un aviso.
         </p>
         <form action={eliminarPerfil}>
           <input type="hidden" name="id" value={profile.id} />

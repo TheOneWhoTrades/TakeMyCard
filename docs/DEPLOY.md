@@ -42,23 +42,33 @@ permite controlar ese encabezado.
 3. **Deploy.** Cada push a la rama por defecto publica a producción; cada PR
    genera un preview con su propia URL.
 
-4. **Verificar** — con el perfil de prueba del seed cargado:
-   - `https://<tu-deploy>.vercel.app/dra-lucia-fernandez` muestra el perfil
+4. **Verificar** — con el perfil de demostración del seed cargado:
+   - `https://<tu-deploy>.vercel.app/estudio-demo` muestra el perfil
+   - `https://<tu-deploy>.vercel.app/t/<codigo_corto>` redirige a ese perfil
+     (el código lo muestra el backoffice en la pantalla de edición)
    - el botón "Guardar contacto" descarga un `.vcf` que el teléfono ofrece
      agregar a la agenda
    - `https://<tu-deploy>.vercel.app/slug-que-no-existe` muestra el aviso
      específico y no un 404 genérico
-   - `https://<tu-deploy>.vercel.app/login` entra al panel
+   - `https://<tu-deploy>.vercel.app/login` entra al backoffice, y
+     `/ingresar` al panel del cliente
+   - `/privacidad`, `/terminos` y `/cookies` **no** muestran el aviso de
+     "borrador sin publicar" (si lo muestran, faltan los datos de `LEGAL` en
+     `lib/marca.ts`)
 
 ## Dominio propio
 
 *Settings → Domains → Add*, y cargar en el DNS del registrador lo que Vercel
 indique. Después actualizar `NEXT_PUBLIC_SITE_URL` y **volver a deployar** (la
-variable se lee en build time).
+variable se lee en build time), y agregar `https://<dominio>/auth/callback` a
+las *Redirect URLs* de Supabase para que el enlace de ingreso por email siga
+funcionando.
 
-Conviene hacerlo **antes de mandar a imprimir las tarjetas**: la URL grabada en
-el chip no se cambia después, así que las tarjetas impresas con el subdominio de
-Vercel quedan atadas a él para siempre.
+Conviene hacerlo **antes de mandar a imprimir las tarjetas**. No es fatal si no
+se llega: el chip guarda `/t/<codigo_corto>`, así que al mudar el dominio basta
+con apuntar el viejo al nuevo (o mantenerlo redirigiendo) y las tarjetas siguen
+resolviendo. Esa indirección existe exactamente para esto. Lo que **sí** sería
+fatal es grabar `/slug` directo en el chip: ahí no hay salida.
 
 ## Cómo se cachea (y qué pasa si Supabase se cae)
 
@@ -67,7 +77,10 @@ Vercel quedan atadas a él para siempre.
   una corrección hecha en el panel se ve al minuto, sin redeployar.
 - Guardar desde el panel invalida el caché de esa página (`revalidatePath`), así
   que en la práctica el cambio se ve enseguida.
-- `/admin` y `/login` nunca se cachean.
+- `/admin`, `/panel`, `/login`, `/ingresar` y `/t/<codigo>` nunca se cachean.
+  El enlace corto es dinámico a propósito: el slug puede cambiar, y una
+  redirección cacheada apuntando al slug viejo es justo el problema que el
+  código corto viene a evitar.
 
 Para que esto funcione, `app/[slug]/page.tsx` declara `generateStaticParams`
 devolviendo una lista vacía. Suena raro, pero es necesario: sin esa
@@ -92,6 +105,13 @@ regenerar desde el panel.
 
 Los slugs inexistentes o pausados **sí** muestran la página de aviso, porque eso
 no es un fallo: la base contestó.
+
+## Qué mirar después de publicar
+
+- Que `/api/evento` esté devolviendo 204. Si un bloqueador lo corta, la página
+  funciona igual y sólo se pierde la estadística: es intencional.
+- Que las fotos suban desde `/panel`. Si dan error de permisos, revisar que las
+  políticas de `storage.objects` de la segunda migración estén aplicadas.
 
 ## Costos
 

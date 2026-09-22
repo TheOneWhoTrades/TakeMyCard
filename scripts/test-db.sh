@@ -36,10 +36,22 @@ PSQL=(psql -h "$TMP" -p "$PUERTO" -U postgres -d tmc_test)
 
 createdb -h "$TMP" -p "$PUERTO" -U postgres tmc_test
 "${PSQL[@]}" -q -v ON_ERROR_STOP=1 -f "$RAIZ/supabase/tests/00_shim_supabase.sql"
-"${PSQL[@]}" -q -v ON_ERROR_STOP=1 -f "$RAIZ"/supabase/migrations/*.sql
+# Una por una y en orden: `psql -f a.sql b.sql` no aplica las dos, toma la
+# segunda como nombre de base de datos. Con una sola migración pasaba
+# desapercibido; con dos, la segunda se salteaba en silencio.
+for MIGRACION in "$RAIZ"/supabase/migrations/*.sql; do
+  echo "-- aplicando $(basename "$MIGRACION")"
+  "${PSQL[@]}" -q -v ON_ERROR_STOP=1 -f "$MIGRACION"
+done
 "${PSQL[@]}" -q -v ON_ERROR_STOP=1 -f "$RAIZ/supabase/seed.sql"
 
 echo "== Migración y seed aplicados. Probando RLS =="
 # Los ERROR que aparecen acá son esperados: son los intentos de escritura que
 # las políticas deben rechazar. Cada bloque dice qué se espera.
 "${PSQL[@]}" -f "$RAIZ/supabase/tests/01_rls.sql"
+
+echo
+echo "== Aserciones automaticas =="
+# Este sí corta el script si algo falla: es el que hace fallar la CI.
+"${PSQL[@]}" -q -v ON_ERROR_STOP=1 -f "$RAIZ/supabase/tests/02_asserts.sql"
+echo "OK: ninguna politica de seguridad se rompio."

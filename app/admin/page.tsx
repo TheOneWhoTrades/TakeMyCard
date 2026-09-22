@@ -55,11 +55,12 @@ export default async function PaginaAdmin() {
                   <a href={`/${p.slug}`} target="_blank" rel="noopener noreferrer">
                     /{p.slug}
                   </a>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--texto-suave)' }}>
+                    chip: /t/{p.codigo_corto}
+                  </div>
                 </td>
                 <td>
-                  <span className={`pastilla ${p.plan === 'premium' ? 'pastilla--premium' : ''}`}>
-                    {p.plan}
-                  </span>
+                  <span className={`pastilla pastilla--${p.plan}`}>{p.plan}</span>
                 </td>
                 <td>
                   <span className={`pastilla ${p.activo ? 'pastilla--ok' : 'pastilla--off'}`}>

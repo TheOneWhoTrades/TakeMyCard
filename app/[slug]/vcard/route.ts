@@ -27,7 +27,7 @@ export async function GET(
     return new Response('Perfil no disponible', { status: 404 })
   }
 
-  const { profile, links } = resultado
+  const { profile, links, contacto } = resultado
 
   let fotoBase64: { datos: string; mime: string } | null = null
   if (profile.foto_url) {
@@ -47,6 +47,7 @@ export async function GET(
 
   const vcard = generarVCard(profile, links, {
     urlPerfil: `${siteUrl()}/${profile.slug}`,
+    contacto,
     fotoBase64,
   })
 

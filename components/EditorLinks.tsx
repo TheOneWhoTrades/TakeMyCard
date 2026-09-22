@@ -4,13 +4,24 @@ import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { hrefDeLink, LINK_META } from '@/lib/links'
 import { LINK_TIPOS, type Link, type LinkTipo } from '@/lib/types'
-import {
-  actualizarLink,
-  crearLink,
-  eliminarLink,
-  moverLink,
-  type EstadoAccion,
-} from './actions'
+
+/**
+ * Editor de los botones de contacto de un perfil.
+ *
+ * Las acciones llegan por props en vez de importarse: el mismo editor lo usan
+ * el panel nuestro (que puede tocar cualquier perfil) y el del cliente (que
+ * sólo toca el suyo), y cada uno pasa sus propias Server Actions. Duplicar el
+ * componente para cambiar cuatro imports era garantía de que uno de los dos se
+ * quedara atrás.
+ */
+export type EstadoAccion = { error?: string; ok?: string }
+
+export type AccionesLinks = {
+  crear: (estado: EstadoAccion, formData: FormData) => Promise<EstadoAccion>
+  actualizar: (formData: FormData) => Promise<void>
+  eliminar: (formData: FormData) => Promise<void>
+  mover: (formData: FormData) => Promise<void>
+}
 
 function Enviar({ texto, clase = 'btn' }: { texto: string; clase?: string }) {
   const { pending } = useFormStatus()
@@ -38,17 +49,19 @@ function FilaLink({
   profileId,
   esPrimero,
   esUltimo,
+  acciones,
 }: {
   link: Link
   profileId: string
   esPrimero: boolean
   esUltimo: boolean
+  acciones: AccionesLinks
 }) {
   const href = hrefDeLink(link)
 
   return (
     <div className="tarjeta">
-      <form action={actualizarLink}>
+      <form action={acciones.actualizar}>
         <input type="hidden" name="id" value={link.id} />
         <input type="hidden" name="profile_id" value={profileId} />
 
@@ -94,7 +107,7 @@ function FilaLink({
       </form>
 
       <div className="admin__acciones" style={{ marginTop: '0.5rem' }}>
-        <form action={moverLink}>
+        <form action={acciones.mover}>
           <input type="hidden" name="id" value={link.id} />
           <input type="hidden" name="profile_id" value={profileId} />
           <input type="hidden" name="direccion" value="arriba" />
@@ -102,7 +115,7 @@ function FilaLink({
             ↑
           </button>
         </form>
-        <form action={moverLink}>
+        <form action={acciones.mover}>
           <input type="hidden" name="id" value={link.id} />
           <input type="hidden" name="profile_id" value={profileId} />
           <input type="hidden" name="direccion" value="abajo" />
@@ -110,7 +123,7 @@ function FilaLink({
             ↓
           </button>
         </form>
-        <form action={eliminarLink}>
+        <form action={acciones.eliminar}>
           <input type="hidden" name="id" value={link.id} />
           <input type="hidden" name="profile_id" value={profileId} />
           <button type="submit" className="btn btn--mini btn--peligro">
@@ -122,8 +135,16 @@ function FilaLink({
   )
 }
 
-export function EditorLinks({ profileId, links }: { profileId: string; links: Link[] }) {
-  const [estado, accion] = useActionState<EstadoAccion, FormData>(crearLink, {})
+export function EditorLinks({
+  profileId,
+  links,
+  acciones,
+}: {
+  profileId: string
+  links: Link[]
+  acciones: AccionesLinks
+}) {
+  const [estado, accion] = useActionState<EstadoAccion, FormData>(acciones.crear, {})
 
   return (
     <>
@@ -139,6 +160,7 @@ export function EditorLinks({ profileId, links }: { profileId: string; links: Li
             profileId={profileId}
             esPrimero={i === 0}
             esUltimo={i === links.length - 1}
+            acciones={acciones}
           />
         ))
       )}

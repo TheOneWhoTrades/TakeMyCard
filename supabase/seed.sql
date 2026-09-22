@@ -1,39 +1,63 @@
 -- =============================================================================
--- TakeMyCard · perfil de prueba
--- Datos ficticios para mostrar la plataforma a los clientes piloto.
+-- TakeMyCard · perfil de demostración
+--
+-- Es el que se muestra en la venta («ver una tarjeta de ejemplo» en la home) y
+-- el que usamos para probar la plataforma. Datos ficticios, plan Premium, para
+-- que se vea todo lo que el producto puede hacer.
+--
 -- Se puede correr las veces que haga falta: es idempotente.
 -- =============================================================================
 
-insert into public.profiles (slug, nombre, profesion, bio, foto_url, plan, activo)
+insert into public.profiles (slug, nombre, profesion, bio, plan, paleta, layout, activo)
 values (
-  'dra-lucia-fernandez',
-  'Dra. Lucía Fernández',
-  'Odontóloga · Ortodoncia y estética dental',
-  'Atención personalizada en San Luis capital. Turnos de lunes a viernes, obras sociales y particulares. Más de 10 años acompañando sonrisas.',
-  null,
-  'basico',
+  'estudio-demo',
+  'Estudio Álvarez & Asociados',
+  'Contadores Públicos · Impuestos y sociedades',
+  'Asesoramiento impositivo, laboral y societario para pymes y monotributistas de San Luis. Atendemos con turno, en el estudio o por videollamada.',
+  'premium',
+  'bosque',
+  'editorial',
   true
 )
 on conflict (slug) do update set
   nombre    = excluded.nombre,
   profesion = excluded.profesion,
   bio       = excluded.bio,
+  plan      = excluded.plan,
+  paleta    = excluded.paleta,
+  layout    = excluded.layout,
   activo    = excluded.activo;
 
 -- Los links se reemplazan enteros para que el seed sea reproducible.
 delete from public.links
-where profile_id = (select id from public.profiles where slug = 'dra-lucia-fernandez');
+where profile_id = (select id from public.profiles where slug = 'estudio-demo');
 
 insert into public.links (profile_id, tipo, label, valor, orden)
 select p.id, v.tipo::link_tipo, v.label, v.valor, v.orden
 from public.profiles p,
 (values
-  ('whatsapp',  'Escribime por WhatsApp', '2664123456',                                   1),
-  ('agenda',    'Pedir turno online',     'https://calendly.com/dra-lucia-fernandez',     2),
-  ('instagram', 'Seguime en Instagram',   'dra.luciafernandez',                           3),
-  ('ubicacion', 'Cómo llegar al consultorio', 'Av. Illia 350, San Luis, Argentina',       4),
-  ('web',       'Sitio web',              'https://ejemplo-odontologia.com.ar',           5),
-  ('alias_cbu', 'Alias para señas',       'lucia.odonto.sl',                              6),
-  ('email',     'Escribirme un mail',     'contacto@ejemplo-odontologia.com.ar',          7)
+  ('whatsapp',  'Escribinos por WhatsApp',   '2664123456',                             1),
+  ('agenda',    'Pedir turno',               'https://calendly.com/estudio-demo',      2),
+  ('telefono',  'Llamar al estudio',         '2664123456',                             3),
+  ('ubicacion', 'Cómo llegar',               'Av. Illia 350, San Luis, Argentina',     4),
+  ('linkedin',  'Seguinos en LinkedIn',      'company/estudio-demo',                   5),
+  ('web',       'Nuestro sitio',             'https://ejemplo-estudio.com.ar',         6),
+  ('alias_cbu', 'Alias para transferencias', 'estudio.demo.sl',                        7)
 ) as v(tipo, label, valor, orden)
-where p.slug = 'dra-lucia-fernandez';
+where p.slug = 'estudio-demo';
+
+-- Datos de contacto: es lo que se guarda en la agenda al tocar «Guardar contacto».
+insert into public.contact_info (profile_id, telefono, email, direccion, redes)
+select
+  p.id,
+  '2664123456',
+  'contacto@ejemplo-estudio.com.ar',
+  'Av. Illia 350, San Luis, Argentina',
+  '{"linkedin": "company/estudio-demo"}'::jsonb
+from public.profiles p
+where p.slug = 'estudio-demo'
+on conflict (profile_id) do update set
+  telefono  = excluded.telefono,
+  email     = excluded.email,
+  direccion = excluded.direccion,
+  redes     = excluded.redes;
