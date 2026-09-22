@@ -1,10 +1,10 @@
 /**
- * Datos de marca y de negocio en un solo lugar.
+ * Marca, negocio y datos legales en un solo lugar.
  *
- * Todo lo que se cambia seguido --el número de WhatsApp, los textos de venta,
- * qué incluye cada plan-- vive acá y no desparramado por los componentes. Si
- * hay que corregir algo del sitio comercial, este es el único archivo que hace
- * falta tocar.
+ * El brief lo pide explícitamente: el nombre todavía está en revisión, así que
+ * todo lo visible --logo, textos, metadatos, emails, páginas legales-- tiene
+ * que salir de una única constante. Si el proyecto pasa a llamarse de otra
+ * manera, se cambia acá y no queda ningún «TakeMyCard» suelto en el código.
  */
 
 export const MARCA = {
@@ -12,7 +12,50 @@ export const MARCA = {
   eslogan: 'La revolución de las tarjetas personales',
   ciudad: 'San Luis',
   provincia: 'San Luis, Argentina',
+  pais: 'Argentina',
+  /**
+   * Dominio de la marca, sólo para mostrar en textos de venta ("tudominio/tu-nombre").
+   * Las URLs reales se arman con siteUrl() de lib/env.ts, que en producción sale
+   * de la variable de entorno: todavía no hay dominio comprado.
+   */
+  dominioVisible: 'takemycard.com.ar',
 } as const
+
+// ---------------------------------------------------------------------------
+// Datos legales
+// ---------------------------------------------------------------------------
+
+/**
+ * Identidad del responsable del tratamiento de datos.
+ *
+ * ⚠️ PENDIENTE: completar antes de publicar el sitio. Las páginas de privacidad,
+ * términos y cookies leen de acá; mientras haya valores en null muestran un
+ * aviso visible en lugar de inventar datos, porque publicar una política de
+ * privacidad con un titular equivocado es peor que no tenerla.
+ */
+export const LEGAL = {
+  /** Nombre y apellido o razón social de quien responde por los datos. */
+  titular: null as string | null,
+  /** CUIT / CUIL del titular. */
+  cuit: null as string | null,
+  /** Domicilio legal, para notificaciones y para la AAIP. */
+  domicilio: null as string | null,
+  /** Email al que se ejercen los derechos de acceso, rectificación y supresión. */
+  emailPrivacidad: null as string | null,
+  /** Desde cuándo rige esta versión de los textos legales. */
+  vigenteDesde: '2026-09-22',
+  /** Jurisdicción para los términos. */
+  jurisdiccion: 'los tribunales ordinarios de la Ciudad de San Luis, Provincia de San Luis',
+} as const
+
+/** ¿Están cargados todos los datos legales? Si no, las páginas avisan. */
+export function faltanDatosLegales(): boolean {
+  return !LEGAL.titular || !LEGAL.cuit || !LEGAL.domicilio || !LEGAL.emailPrivacidad
+}
+
+// ---------------------------------------------------------------------------
+// Contacto
+// ---------------------------------------------------------------------------
 
 /**
  * WhatsApp de contacto, en formato internacional y sin signos: 54 + 9 +
@@ -43,11 +86,31 @@ export const MENSAJES = {
     `Hola! Estoy interesado en crear mi tarjeta digital con el plan ${plan}. ¿Me contás cómo es?`,
 
   /**
+   * Formulario de contacto de la home. No se guarda nada de lo que la persona
+   * escribe: el formulario arma este texto y abre WhatsApp, donde la
+   * conversación sigue. Es la decisión de producto que hace que el sitio
+   * comercial no procese ningún dato personal.
+   */
+  consulta: ({ nombre, actividad, mensaje }: { nombre: string; actividad: string; mensaje: string }) =>
+    [
+      `Hola! Soy ${nombre || 'un interesado'}.`,
+      actividad && `Me dedico a: ${actividad}.`,
+      mensaje && mensaje,
+      'Quiero saber más sobre las tarjetas digitales.',
+    ]
+      .filter(Boolean)
+      .join('\n'),
+
+  /**
    * Distinto a propósito: quien escribe desde acá no es un interesado, es
    * alguien que tiene una tarjeta en la mano y no le funciona.
    */
   tarjetaRota: (slug: string) =>
     `Hola! Acerqué una tarjeta de ${MARCA.nombre} a la dirección /${slug} y no me funciona.`,
+
+  /** Igual que el anterior, pero cuando lo que falló fue el código del chip. */
+  codigoRoto: (codigo: string) =>
+    `Hola! Acerqué una tarjeta de ${MARCA.nombre} con el código ${codigo} y no me funciona.`,
 } as const
 
 /** Arma el link de WhatsApp con el mensaje ya cargado. */
@@ -56,90 +119,125 @@ export function linkWhatsapp(mensaje: string): string {
 }
 
 /** Slug del perfil de demostración (el del seed). Se muestra como ejemplo vivo. */
-export const SLUG_DEMO = 'dra-lucia-fernandez'
+export const SLUG_DEMO = 'estudio-demo'
 
 // ---------------------------------------------------------------------------
 // Planes
 // ---------------------------------------------------------------------------
 
-export type Plan = {
+/**
+ * Los tres planes, tal como quedaron definidos en el brief.
+ *
+ * Los tres salen al mercado juntos y los tres incluyen dos tarjetas físicas;
+ * las de repuesto se venden aparte.
+ *
+ * El corte principal está entre Básico y Plus: en el Básico el perfil lo
+ * cargamos y lo editamos nosotros, el cliente no entra al panel.
+ */
+
+export type PlanComercial = {
   id: 'basico' | 'plus' | 'premium'
   nombre: string
   /** Bajada corta: para quién es este plan. */
   para: string
-  /** Lo que incluye, en orden de importancia para el que compra. */
-  incluye: string[]
-  /**
-   * Lo que NO incluye. Se muestra tachado a propósito: la comparación honesta
-   * de lo que falta es lo que hace que el plan de arriba se vea conveniente.
-   */
-  noIncluye: string[]
+  precio: {
+    /** Línea principal del precio. */
+    principal: string
+    /** Aclaración debajo (forma de pago o recurrencia). */
+    detalle: string
+  }
   /** Destaca visualmente la columna (el plan que queremos que elijan). */
   destacado?: boolean
   /** Texto del botón de esa columna. */
   cta: string
 }
 
-/**
- * Los tres planes, en orden de precio.
- *
- * El "plus" está construido como subconjunto estricto del premium: no tiene
- * ninguna función que el premium no tenga. Es deliberado --es el plan señuelo
- * del que habla el plan de negocio-- y por eso su columna de "no incluye" es
- * la más larga de las tres.
- */
-export const PLANES: Plan[] = [
+export const PLANES: PlanComercial[] = [
   {
     id: 'basico',
     nombre: 'Básico',
-    para: 'Para empezar a repartir tarjetas ya, sin vueltas.',
-    incluye: [
-      'Tarjeta física con chip NFC',
-      'Tu página propia en takemycard.com/tu-nombre',
-      'Foto o logo, nombre, profesión y presentación',
-      'Botones de WhatsApp, redes, web, agenda, ubicación y alias/CBU',
-      'Botón «Guardar contacto»: entra a la agenda del otro de una',
-      'Actualizamos tus datos cuando lo pidas',
-    ],
-    noIncluye: [
-      'Diseño propio: usa nuestra plantilla',
-      'Panel para editarte vos mismo',
-      'Estadísticas de uso',
-    ],
+    para: 'Para empezar a repartir tarjetas ya. Tu página la cargamos y la mantenemos nosotros.',
+    precio: { principal: 'USD 50 / año', detalle: 'Pago único o en cuotas' },
     cta: 'Quiero el Básico',
   },
   {
     id: 'plus',
     nombre: 'Plus',
-    para: 'Para quien quiere manejar su página sin depender de nadie.',
-    incluye: [
-      'Todo lo del Básico',
-      'Colores y tipografía adaptados a tu marca',
-      'Panel propio: editás tus datos vos, cuando quieras',
-      'Cuántas veces abrieron tu tarjeta',
-    ],
-    noIncluye: [
-      'Qué botón tocó cada visitante',
-      'Portfolio, testimonios y formulario de contacto',
-      'Landing diseñada a medida',
-      'Cambios ilimitados',
-    ],
+    para: 'Para quien quiere manejar su página solo, cuando quiera y sin pedirle permiso a nadie.',
+    precio: { principal: 'USD 45 + USD 8 / mes', detalle: 'USD 45 de entrada, una sola vez' },
     cta: 'Quiero el Plus',
   },
   {
     id: 'premium',
     nombre: 'Premium',
-    para: 'Para el profesional que vive de su marca personal.',
-    incluye: [
-      'Todo lo del Plus',
-      'Landing 100% a medida, diseñada con ayuda de IA',
-      'Portfolio, testimonios y formulario de contacto',
-      'Estadísticas completas: qué botón tocan, cuál funciona mejor y cómo evoluciona mes a mes',
-      'Cambios ilimitados mientras dure la suscripción',
-    ],
-    noIncluye: [],
+    para: 'Para el profesional que vive de su marca personal y quiere saber qué pasa con su tarjeta.',
+    precio: { principal: 'USD 50 + USD 10 / mes', detalle: 'USD 50 de entrada, una sola vez' },
     destacado: true,
     cta: 'Quiero el Premium',
+  },
+]
+
+/**
+ * La tabla comparativa del brief, fila por fila.
+ *
+ * Se modela como tabla y no como tres listas de «incluye / no incluye» porque
+ * es como está decidido y porque el que compara planes quiere leer en
+ * horizontal: qué cambia de una columna a la otra.
+ */
+export type FilaComparativa = {
+  funcion: string
+  /** Texto por plan. `true` = «Sí», `false` = «No», string = texto propio. */
+  basico: boolean | string
+  plus: boolean | string
+  premium: boolean | string
+  /** Aclaración opcional debajo del nombre de la función. */
+  nota?: string
+}
+
+export const COMPARATIVA: FilaComparativa[] = [
+  {
+    funcion: 'Tarjetas físicas incluidas',
+    basico: '2',
+    plus: '2',
+    premium: '2',
+    nota: 'Las de repuesto se venden aparte.',
+  },
+  { funcion: 'Perfil digital con contacto y links', basico: true, plus: true, premium: true },
+  {
+    funcion: 'Botón «Guardar contacto»',
+    basico: true,
+    plus: true,
+    premium: true,
+    nota: 'El visitante te guarda en su agenda de un toque.',
+  },
+  {
+    funcion: 'Color de la tarjeta digital',
+    basico: '6 colores a elegir',
+    plus: true,
+    premium: true,
+  },
+  { funcion: 'Foto de perfil', basico: true, plus: true, premium: true },
+  { funcion: 'Foto de portada', basico: false, plus: true, premium: true },
+  {
+    funcion: 'Panel de autoedición',
+    basico: false,
+    plus: true,
+    premium: true,
+    nota: 'En el Básico los cambios los hacemos nosotros cuando los pedís.',
+  },
+  {
+    funcion: 'Seguimiento de datos',
+    basico: false,
+    plus: false,
+    premium: true,
+    nota: 'Cuántas veces abrieron tu tarjeta y qué botón tocaron.',
+  },
+  {
+    funcion: 'Landing personalizada',
+    basico: false,
+    plus: false,
+    premium: true,
+    nota: 'Mismo contenido, diseño propio.',
   },
 ]
 
@@ -153,7 +251,7 @@ export const PASOS = [
   {
     titulo: 'Armamos tu página y tu tarjeta',
     texto:
-      'Te mostramos la página antes de imprimir nada. Cuando le das el visto bueno, grabamos el chip y te entregamos la tarjeta en mano.',
+      'Te mostramos la página antes de imprimir nada. Cuando le das el visto bueno, grabamos el chip y te entregamos las dos tarjetas en mano.',
   },
   {
     titulo: 'La acercás a un celular',
@@ -170,7 +268,7 @@ export const PREGUNTAS = [
   },
   {
     p: '¿Y si cambio de teléfono, de trabajo o de redes?',
-    r: 'No pasa nada: la tarjeta no guarda tus datos, guarda la dirección de tu página. Cambiás lo que quieras en la página y todas las tarjetas que ya repartiste quedan actualizadas solas.',
+    r: 'No pasa nada: la tarjeta no guarda tus datos, guarda un código que apunta a tu página. Cambiás lo que quieras en la página y todas las tarjetas que ya repartiste quedan actualizadas solas. Incluso si el día de mañana cambiamos de dominio.',
   },
   {
     p: '¿Cuánto dura la tarjeta?',
@@ -178,10 +276,14 @@ export const PREGUNTAS = [
   },
   {
     p: '¿Puedo tener más de una tarjeta?',
-    r: 'Sí, y conviene. Todas apuntan a la misma página, así que podés tener una en la billetera, otra en el mostrador y otra pegada atrás del celular.',
+    r: 'Sí, y conviene. Cada plan incluye dos, y podés comprar más. Todas apuntan a la misma página, así que podés tener una en la billetera, otra en el mostrador y otra pegada atrás del celular.',
   },
   {
     p: '¿Funciona en iPhone?',
     r: 'Sí, desde el iPhone 7 en adelante, sin configurar nada. En Android también, en prácticamente cualquier equipo de los últimos años.',
+  },
+  {
+    p: '¿Guardan datos de la gente que abre mi tarjeta?',
+    r: 'No. No usamos cookies ni guardamos la IP, el teléfono ni ningún dato de quien abre tu página: sólo contamos cuántas veces se abrió y qué botón se tocó, sin poder saber quién fue. Está explicado en detalle en la política de privacidad.',
   },
 ] as const

@@ -1,6 +1,18 @@
 import Link from 'next/link'
+import { FormularioContacto } from '@/components/FormularioContacto'
 import { Logo, Marca } from '@/components/Logo'
-import { linkWhatsapp, MARCA, MENSAJES, PASOS, PLANES, PREGUNTAS, SLUG_DEMO } from '@/lib/marca'
+import { PieSitio } from '@/components/PieSitio'
+import {
+  COMPARATIVA,
+  linkWhatsapp,
+  MARCA,
+  MENSAJES,
+  PASOS,
+  PLANES,
+  PREGUNTAS,
+  SLUG_DEMO,
+  type FilaComparativa,
+} from '@/lib/marca'
 
 /**
  * Sitio comercial. Es la página que ve alguien que googlea el proyecto o que
@@ -13,6 +25,27 @@ import { linkWhatsapp, MARCA, MENSAJES, PASOS, PLANES, PREGUNTAS, SLUG_DEMO } fr
 
 export const metadata = {
   alternates: { canonical: '/' },
+}
+
+/** Una celda de la tabla comparativa: Sí, No, o un texto propio. */
+function Celda({ valor }: { valor: FilaComparativa[keyof FilaComparativa] }) {
+  if (valor === true) {
+    return (
+      <span className="comparativa__si">
+        <span aria-hidden="true">✓</span>
+        <span className="visualmente-oculto">Incluido</span>
+      </span>
+    )
+  }
+  if (valor === false) {
+    return (
+      <span className="comparativa__no">
+        <span aria-hidden="true">—</span>
+        <span className="visualmente-oculto">No incluido</span>
+      </span>
+    )
+  }
+  return <span className="comparativa__texto">{valor}</span>
 }
 
 export default function Home() {
@@ -55,7 +88,7 @@ export default function Home() {
             </Link>
           </div>
           <p className="portada__nota">
-            Hechas en {MARCA.ciudad} · Entrega en mano · Tu página queda para siempre
+            Hechas en {MARCA.ciudad} · Dos tarjetas incluidas · Entrega en mano
           </p>
         </section>
 
@@ -103,7 +136,7 @@ export default function Home() {
             <article className="columna">
               <h3 className="columna__titulo">Se actualiza sola</h3>
               <p>
-                Cambiás de número o sumás una red nueva y lo corregimos en tu página. Las
+                Cambiás de número o sumás una red nueva y se corrige en tu página. Las
                 tarjetas que ya repartiste apuntan al lugar correcto: no hay que
                 reimprimir ni reprogramar nada.
               </p>
@@ -124,8 +157,8 @@ export default function Home() {
           <p className="volanta">Planes</p>
           <h2 className="seccion__titulo">Elegí hasta dónde querés llegar</h2>
           <p className="seccion__bajada">
-            Los tres incluyen la tarjeta física y tu página propia. La diferencia está en
-            cuánto control tenés vos y cuánto querés saber sobre quién te contacta.
+            Los tres incluyen dos tarjetas físicas y tu página propia. La diferencia está
+            en cuánto control tenés vos y cuánto querés saber sobre quién te contacta.
           </p>
           <hr className="filete" />
 
@@ -140,26 +173,8 @@ export default function Home() {
                 <h3 className="plan__nombre">{plan.nombre}</h3>
                 <p className="plan__para">{plan.para}</p>
 
-                <ul className="plan__lista">
-                  {plan.incluye.map((item) => (
-                    <li key={item}>
-                      <span className="plan__marca" aria-hidden="true">
-                        ✓
-                      </span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                  {plan.noIncluye.map((item) => (
-                    <li className="plan__falta" key={item}>
-                      <span className="plan__marca" aria-hidden="true">
-                        ×
-                      </span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <p className="plan__precio">Precio a medida de cada caso</p>
+                <p className="plan__precio">{plan.precio.principal}</p>
+                <p className="plan__precio-detalle">{plan.precio.detalle}</p>
 
                 <a
                   className={`btn${plan.destacado ? ' btn--primario' : ''}`}
@@ -172,6 +187,60 @@ export default function Home() {
               </article>
             ))}
           </div>
+
+          {/* La comparativa completa, fila por fila. Es la tabla que decide la
+              compra: el que llega hasta acá quiere saber exactamente qué cambia. */}
+          <p className="comparativa__aviso">Deslizá la tabla para ver los tres planes →</p>
+          <div className="comparativa__caja">
+            <table className="comparativa">
+              <caption className="visualmente-oculto">
+                Comparación de funciones entre los planes Básico, Plus y Premium
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Función</th>
+                  {PLANES.map((plan) => (
+                    <th scope="col" key={plan.id}>
+                      {plan.nombre}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARATIVA.map((fila) => (
+                  <tr key={fila.funcion}>
+                    <th scope="row">
+                      {fila.funcion}
+                      {fila.nota && <span className="comparativa__nota">{fila.nota}</span>}
+                    </th>
+                    <td>
+                      <Celda valor={fila.basico} />
+                    </td>
+                    <td>
+                      <Celda valor={fila.plus} />
+                    </td>
+                    <td>
+                      <Celda valor={fila.premium} />
+                    </td>
+                  </tr>
+                ))}
+                <tr>
+                  <th scope="row">Precio</th>
+                  {PLANES.map((plan) => (
+                    <td key={plan.id}>
+                      <span className="comparativa__texto">{plan.precio.principal}</span>
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p className="seccion__pie">
+            Precios en dólares, se abonan en pesos al cambio del día. Las tarjetas de
+            repuesto se venden aparte. Las condiciones completas están en los{' '}
+            <Link href="/terminos">términos y condiciones</Link>.
+          </p>
         </section>
 
         {/* --- Preguntas --------------------------------------------------- */}
@@ -189,6 +258,19 @@ export default function Home() {
             ))}
           </div>
         </section>
+
+        {/* --- Contacto ---------------------------------------------------- */}
+        <section className="seccion" id="contacto">
+          <p className="volanta">Contacto</p>
+          <h2 className="seccion__titulo">Contanos qué necesitás</h2>
+          <p className="seccion__bajada">
+            Completá lo que quieras y seguimos por WhatsApp. Sin compromiso: si no te
+            convence, no pasa nada.
+          </p>
+          <hr className="filete" />
+
+          <FormularioContacto />
+        </section>
       </div>
 
       {/* --- Cierre ------------------------------------------------------- */}
@@ -196,8 +278,8 @@ export default function Home() {
         <Logo ancho={72} />
         <h2>¿Arrancamos?</h2>
         <p>
-          Escribinos por WhatsApp y te contamos cómo sería tu tarjeta. Sin compromiso:
-          si no te convence, no pasa nada.
+          Escribinos y te contamos cómo sería tu tarjeta. Te mostramos la página antes de
+          imprimir nada.
         </p>
         <a
           className="btn btn--grande"
@@ -210,14 +292,7 @@ export default function Home() {
       </section>
 
       <div className="sitio">
-        <footer className="pie">
-          <p>
-            © {new Date().getFullYear()} {MARCA.nombre} · {MARCA.provincia}
-          </p>
-          <p>
-            <Link href="/login">Acceso administradores</Link>
-          </p>
-        </footer>
+        <PieSitio />
       </div>
     </>
   )

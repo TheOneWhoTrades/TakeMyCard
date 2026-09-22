@@ -1,13 +1,19 @@
 import { cache } from 'react'
 import { supabasePublico } from '@/lib/supabase/public'
-import type { Link, Profile } from '@/lib/types'
+import type { ContactInfo, Link, Profile } from '@/lib/types'
+
+export type PerfilCompleto = {
+  profile: Profile
+  links: Link[]
+  contacto: ContactInfo | null
+}
 
 export type ResultadoPerfil =
-  | { estado: 'activo'; profile: Profile; links: Link[] }
+  | ({ estado: 'activo' } & PerfilCompleto)
   | { estado: 'inactivo' | 'no_existe' }
 
 /**
- * Busca un perfil público por slug junto con sus links.
+ * Busca un perfil público por slug junto con sus links y sus datos de contacto.
  *
  * RLS sólo devuelve perfiles activos, así que un perfil dado de baja y un slug
  * inexistente son indistinguibles en la consulta. Para poder mostrar el mensaje
@@ -41,14 +47,24 @@ export const obtenerPerfilPublico = cache(async (slug: string): Promise<Resultad
     return { estado: estado === 'inactivo' ? 'inactivo' : 'no_existe' }
   }
 
-  const { data: links } = await supabase
-    .from('links')
-    .select('*')
-    .eq('profile_id', profile.id)
-    .eq('activo', true)
-    .order('orden', { ascending: true })
-    .order('created_at', { ascending: true })
-    .returns<Link[]>()
+  // Los dos pedidos que faltan no dependen entre sí: van juntos para no sumar
+  // dos viajes en serie a una página que tiene que abrir apenas se apoya la
+  // tarjeta en el teléfono.
+  const [{ data: links }, { data: contacto }] = await Promise.all([
+    supabase
+      .from('links')
+      .select('*')
+      .eq('profile_id', profile.id)
+      .eq('activo', true)
+      .order('orden', { ascending: true })
+      .order('created_at', { ascending: true })
+      .returns<Link[]>(),
+    supabase
+      .from('contact_info')
+      .select('*')
+      .eq('profile_id', profile.id)
+      .maybeSingle<ContactInfo>(),
+  ])
 
-  return { estado: 'activo', profile, links: links ?? [] }
+  return { estado: 'activo', profile, links: links ?? [], contacto: contacto ?? null }
 })

@@ -1,4 +1,4 @@
-import type { Link, Profile } from './types'
+import type { ContactInfo, Link, Profile } from './types'
 import { hrefDeLink } from './links'
 
 /** Escapa según RFC 6350 §3.4: coma, punto y coma, barra y salto de línea. */
@@ -39,6 +39,17 @@ function param(valor: string): string {
   return limpio || 'Link'
 }
 
+/**
+ * Mismo criterio que lib/links.ts para los teléfonos sueltos de `contact_info`:
+ * sólo dígitos, sin el 0 de larga distancia ni el 15, con el código de país
+ * argentino adelante si no vino.
+ */
+function telefonoE164(valor: string): string {
+  const digitos = valor.replace(/\D/g, '').replace(/^0+/, '')
+  if (digitos.startsWith('54')) return digitos
+  return `549${digitos.replace(/^15/, '')}`
+}
+
 /** Las líneas de vCard se pliegan a 75 octetos, continuando con un espacio. */
 function plegar(linea: string): string[] {
   const bytes = Buffer.from(linea, 'utf8')
@@ -71,9 +82,17 @@ function plegar(linea: string): string[] {
 export function generarVCard(
   profile: Profile,
   links: Link[],
-  opciones: { urlPerfil: string; fotoBase64?: { datos: string; mime: string } | null } = {
-    urlPerfil: '',
-  },
+  opciones: {
+    urlPerfil: string
+    /**
+     * Datos de `contact_info`. Tienen prioridad sobre los links: son los que se
+     * cargaron pensando en la agenda del teléfono, no en los botones. Los links
+     * siguen aportando lo que no esté acá, así que un perfil que todavía no
+     * tiene contact_info cargado genera la misma vCard que antes.
+     */
+    contacto?: ContactInfo | null
+    fotoBase64?: { datos: string; mime: string } | null
+  } = { urlPerfil: '' },
 ): string {
   const { nombre, apellido } = partirNombre(profile.nombre)
   const lineas: string[] = ['BEGIN:VCARD', 'VERSION:3.0']
@@ -93,7 +112,31 @@ export function generarVCard(
 
   // Un solo teléfono por número: si WhatsApp y Teléfono coinciden, no duplicar.
   const telefonosVistos = new Set<string>()
+  const emailsVistos = new Set<string>()
+  let hayDireccion = false
 
+  // --- contact_info primero -------------------------------------------------
+  const contacto = opciones.contacto
+  if (contacto?.telefono) {
+    const e164 = `+${telefonoE164(contacto.telefono)}`
+    telefonosVistos.add(e164)
+    lineas.push(`TEL;TYPE=CELL,VOICE:${e164}`)
+  }
+  if (contacto?.email) {
+    emailsVistos.add(contacto.email.trim().toLowerCase())
+    lineas.push(`EMAIL;TYPE=INTERNET:${esc(contacto.email.trim())}`)
+  }
+  if (contacto?.direccion) {
+    hayDireccion = true
+    lineas.push(`ADR;TYPE=WORK:;;${esc(contacto.direccion)};;;;`)
+  }
+  for (const [red, valor] of Object.entries(contacto?.redes ?? {})) {
+    if (!valor?.trim()) continue
+    const href = hrefDeLink({ tipo: 'otro', valor })
+    if (href) lineas.push(`URL;TYPE=${param(red)}:${esc(href)}`)
+  }
+
+  // --- después, lo que aporten los botones ----------------------------------
   for (const link of links) {
     const valor = link.valor.trim()
     const href = hrefDeLink(link)
@@ -108,13 +151,22 @@ export function generarVCard(
         lineas.push(`TEL;TYPE=CELL,VOICE:${e164}`)
         break
       }
-      case 'email':
+      case 'email': {
+        const normalizado = valor.toLowerCase()
+        if (emailsVistos.has(normalizado)) break
+        emailsVistos.add(normalizado)
         lineas.push(`EMAIL;TYPE=INTERNET:${esc(valor)}`)
         break
+      }
       case 'ubicacion':
         // Sin parsear la dirección en componentes: va entera en el campo calle,
-        // que es como la muestran las agendas de los teléfonos.
-        lineas.push(`ADR;TYPE=WORK:;;${esc(valor)};;;;`)
+        // que es como la muestran las agendas de los teléfonos. vCard 3.0 sólo
+        // guarda una dirección de trabajo, así que si contact_info ya trajo
+        // una, el botón sólo aporta el link al mapa.
+        if (!hayDireccion) {
+          hayDireccion = true
+          lineas.push(`ADR;TYPE=WORK:;;${esc(valor)};;;;`)
+        }
         if (href) lineas.push(`URL;TYPE=${param('Ubicacion')}:${esc(href)}`)
         break
       case 'alias_cbu':

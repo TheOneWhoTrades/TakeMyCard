@@ -2,24 +2,32 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import type { EstadoAccion } from '@/components/EditorLinks'
 import { requerirAdmin } from '@/lib/auth'
+import { PALETAS } from '@/lib/paletas'
 import { normalizarSlug } from '@/lib/slug'
-import { LINK_TIPOS, type LinkTipo } from '@/lib/types'
+import { esLayout, esPlan, LINK_TIPOS, type LinkTipo } from '@/lib/types'
 
-export type EstadoAccion = { error?: string; ok?: string }
+export type { EstadoAccion }
 
 const texto = (fd: FormData, campo: string) => String(fd.get(campo) ?? '').trim()
 const opcional = (fd: FormData, campo: string) => texto(fd, campo) || null
 
 function leerPerfil(formData: FormData) {
+  const plan = texto(formData, 'plan')
+  const paleta = texto(formData, 'paleta')
+  const layout = texto(formData, 'layout')
+
   return {
     slug: normalizarSlug(texto(formData, 'slug')),
     nombre: texto(formData, 'nombre'),
     profesion: opcional(formData, 'profesion'),
     bio: opcional(formData, 'bio'),
     foto_url: opcional(formData, 'foto_url'),
-    plan: texto(formData, 'plan') === 'premium' ? 'premium' : 'basico',
-    auto_edicion_habilitada: formData.get('auto_edicion_habilitada') === 'on',
+    portada_url: opcional(formData, 'portada_url'),
+    plan: esPlan(plan) ? plan : 'basico',
+    paleta: PALETAS.some((p) => p.id === paleta) ? paleta : 'bosque',
+    layout: esLayout(layout) ? layout : 'estandar',
     activo: formData.get('activo') === 'on',
   }
 }
@@ -73,6 +81,33 @@ export async function actualizarPerfil(
   return { ok: 'Perfil guardado.' }
 }
 
+/**
+ * Asocia (o desasocia) la cuenta del cliente con su perfil, buscándola por
+ * email. La búsqueda la hace un RPC en la base: desde la app no se puede leer
+ * `auth.users` con la clave pública, y traer la clave de servicio al servidor
+ * web para esto sería cambiar una molestia por un riesgo grande.
+ */
+export async function vincularCuenta(
+  _estado: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
+  const { supabase } = await requerirAdmin()
+  const id = texto(formData, 'id')
+  const email = texto(formData, 'email')
+
+  const { data, error } = await supabase.rpc('vincular_cuenta', {
+    p_profile_id: id,
+    p_email: email,
+  })
+
+  if (error) return { error: error.message }
+
+  revalidatePath(`/admin/${id}`)
+  return {
+    ok: data === 'desvinculado' ? 'Cuenta desvinculada.' : 'Cuenta vinculada al perfil.',
+  }
+}
+
 export async function alternarActivo(formData: FormData) {
   const { supabase } = await requerirAdmin()
   const id = texto(formData, 'id')
@@ -95,12 +130,75 @@ export async function eliminarPerfil(formData: FormData) {
   const id = texto(formData, 'id')
 
   const { data } = await supabase.from('profiles').select('slug').eq('id', id).single()
-  // Los links caen por ON DELETE CASCADE.
+  // Los links, el contacto, los eventos y las tarjetas caen por ON DELETE CASCADE.
   await supabase.from('profiles').delete().eq('id', id)
 
   revalidatePath('/admin')
   if (data?.slug) revalidatePath(`/${data.slug}`)
   redirect('/admin')
+}
+
+// --- Datos de contacto -------------------------------------------------------
+
+export async function guardarContacto(
+  _estado: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
+  const { supabase } = await requerirAdmin()
+  const profileId = texto(formData, 'profile_id')
+
+  const redes: Record<string, string> = {}
+  for (const red of ['instagram', 'linkedin', 'facebook', 'tiktok', 'youtube'] as const) {
+    const valor = texto(formData, `red_${red}`)
+    if (valor) redes[red] = valor
+  }
+
+  const { error } = await supabase.from('contact_info').upsert(
+    {
+      profile_id: profileId,
+      telefono: opcional(formData, 'telefono'),
+      email: opcional(formData, 'email'),
+      direccion: opcional(formData, 'direccion'),
+      redes,
+    },
+    { onConflict: 'profile_id' },
+  )
+
+  if (error) return { error: mensajeError(error) }
+
+  const { data } = await supabase.from('profiles').select('slug').eq('id', profileId).single()
+  revalidatePath(`/admin/${profileId}`)
+  if (data?.slug) revalidatePath(`/${data.slug}`)
+
+  return { ok: 'Datos de contacto guardados.' }
+}
+
+// --- Tarjetas físicas --------------------------------------------------------
+
+export async function registrarTarjeta(
+  _estado: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
+  const { supabase } = await requerirAdmin()
+  const profileId = texto(formData, 'profile_id')
+
+  const { error } = await supabase.from('cards').insert({
+    profile_id: profileId,
+    entregada_el: opcional(formData, 'entregada_el'),
+    reposicion: formData.get('reposicion') === 'on',
+    nota: opcional(formData, 'nota'),
+  })
+
+  if (error) return { error: mensajeError(error) }
+
+  revalidatePath(`/admin/${profileId}`)
+  return { ok: 'Tarjeta registrada.' }
+}
+
+export async function eliminarTarjeta(formData: FormData) {
+  const { supabase } = await requerirAdmin()
+  await supabase.from('cards').delete().eq('id', texto(formData, 'id'))
+  revalidatePath(`/admin/${texto(formData, 'profile_id')}`)
 }
 
 // --- Links -------------------------------------------------------------------
