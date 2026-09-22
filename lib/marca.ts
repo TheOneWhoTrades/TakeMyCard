@@ -28,10 +28,9 @@ export const MARCA = {
 /**
  * Identidad del responsable del tratamiento de datos.
  *
- * ⚠️ PENDIENTE: completar antes de publicar el sitio. Las páginas de privacidad,
- * términos y cookies leen de acá; mientras haya valores en null muestran un
- * aviso visible en lugar de inventar datos, porque publicar una política de
- * privacidad con un titular equivocado es peor que no tenerla.
+ * Las páginas de privacidad, términos y cookies leen de acá. Mientras el
+ * proyecto esté en prueba piloto, los tres datos de identificación pueden
+ * quedar en null: ver MODO_PILOTO, abajo.
  */
 export const LEGAL = {
   /** Nombre y apellido o razón social de quien responde por los datos. */
@@ -40,17 +39,62 @@ export const LEGAL = {
   cuit: null as string | null,
   /** Domicilio legal, para notificaciones y para la AAIP. */
   domicilio: null as string | null,
-  /** Email al que se ejercen los derechos de acceso, rectificación y supresión. */
-  emailPrivacidad: null as string | null,
+  /**
+   * Email al que se ejercen los derechos de acceso, rectificación y supresión,
+   * y canal de contacto de las páginas legales. Es una casilla del proyecto a
+   * la que acceden los dos socios: no una personal, que además de exponer a una
+   * sola persona dejaría el trámite colgado si esa persona no está.
+   */
+  emailPrivacidad: 'proyectotarjetanfc@gmail.com' as string | null,
   /** Desde cuándo rige esta versión de los textos legales. */
   vigenteDesde: '2026-09-22',
   /** Jurisdicción para los términos. */
   jurisdiccion: 'los tribunales ordinarios de la Ciudad de San Luis, Provincia de San Luis',
 } as const
 
-/** ¿Están cargados todos los datos legales? Si no, las páginas avisan. */
-export function faltanDatosLegales(): boolean {
-  return !LEGAL.titular || !LEGAL.cuit || !LEGAL.domicilio || !LEGAL.emailPrivacidad
+/**
+ * Modo piloto: el proyecto todavía no comercializa el servicio.
+ *
+ * Durante el piloto (un solo cliente, sin cargo) no hace falta publicar razón
+ * social, CUIT ni domicilio: no hay contrato de consumo ni cobro, y el único
+ * titular de datos involucrado sabe perfectamente quién está del otro lado. Lo
+ * que sí hace falta es un canal de contacto real, que es `emailPrivacidad`.
+ *
+ * En este modo las páginas legales lo dicen con todas las letras en vez de
+ * mostrar huecos: es información verdadera sobre la etapa del proyecto, no una
+ * excusa. Nada se disfraza de definitivo.
+ *
+ * AL LANZAR COMERCIALMENTE: completar los tres datos de arriba y poner esto en
+ * `false`. Si queda en `false` con datos faltantes, las páginas vuelven a
+ * mostrar el aviso rojo de borrador — que es exactamente la red de seguridad
+ * que queremos, porque publicar precios al público sin identificar al oferente
+ * sí es un problema.
+ */
+export const MODO_PILOTO = true
+
+export type EstadoLegal = 'completo' | 'piloto' | 'incompleto'
+
+/**
+ * En qué estado están los textos legales, que es lo que decide qué versión de
+ * la identificación se publica y qué aviso se muestra.
+ *
+ * `completo` gana siempre: una vez cargados los datos, el modo piloto deja de
+ * tener efecto solo y no hay que acordarse de apagarlo.
+ */
+export function estadoLegal(): EstadoLegal {
+  if (LEGAL.titular && LEGAL.cuit && LEGAL.domicilio && LEGAL.emailPrivacidad) return 'completo'
+  return MODO_PILOTO ? 'piloto' : 'incompleto'
+}
+
+/** Atajo para los textos: ¿estamos mostrando la versión de etapa piloto? */
+export function esPiloto(): boolean {
+  return estadoLegal() === 'piloto'
+}
+
+/** `mailto:` al canal de contacto, con asunto si conviene. */
+export function linkEmail(asunto?: string): string {
+  const destino = LEGAL.emailPrivacidad ?? ''
+  return asunto ? `mailto:${destino}?subject=${encodeURIComponent(asunto)}` : `mailto:${destino}`
 }
 
 // ---------------------------------------------------------------------------
@@ -148,9 +192,21 @@ export type PlanComercial = {
   }
   /** Destaca visualmente la columna (el plan que queremos que elijan). */
   destacado?: boolean
-  /** Texto del botón de esa columna. */
-  cta: string
 }
+
+/**
+ * Los dos llamados a la acción del sitio, y la diferencia entre ellos importa.
+ *
+ * El de la portada habla con alguien que todavía no sabe qué está mirando: le
+ * ofrece una conversación, no una compra. El de las columnas de planes habla
+ * con alguien que ya leyó los precios y eligió: ahí pedir «presupuesto» sería
+ * poner un trámite en el medio de una decisión ya tomada.
+ *
+ * Los tres botones de plan dicen lo mismo a propósito; lo que cambia es el
+ * mensaje de WhatsApp que llevan, que sí nombra el plan.
+ */
+export const CTA_ASESOR = 'Hablar con un asesor'
+export const CTA_PLAN = 'Quiero mi tarjeta'
 
 export const PLANES: PlanComercial[] = [
   {
@@ -158,14 +214,12 @@ export const PLANES: PlanComercial[] = [
     nombre: 'Básico',
     para: 'Para empezar a repartir tarjetas ya. Tu página la cargamos y la mantenemos nosotros.',
     precio: { principal: 'USD 50 / año', detalle: 'Pago único o en cuotas' },
-    cta: 'Quiero el Básico',
   },
   {
     id: 'plus',
     nombre: 'Plus',
     para: 'Para quien quiere manejar su página solo, cuando quiera y sin pedirle permiso a nadie.',
     precio: { principal: 'USD 45 + USD 8 / mes', detalle: 'USD 45 de entrada, una sola vez' },
-    cta: 'Quiero el Plus',
   },
   {
     id: 'premium',
@@ -173,7 +227,6 @@ export const PLANES: PlanComercial[] = [
     para: 'Para el profesional que vive de su marca personal y quiere saber qué pasa con su tarjeta.',
     precio: { principal: 'USD 50 + USD 10 / mes', detalle: 'USD 50 de entrada, una sola vez' },
     destacado: true,
-    cta: 'Quiero el Premium',
   },
 ]
 

@@ -180,12 +180,31 @@ el archivo en vez de ofrecer «Agregar a contactos».
 visitada, la tarjeta sigue funcionando aunque Supabase se caiga. El detalle está
 en [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
-## Pendiente antes de publicar
+## Etapa del proyecto y páginas legales
 
-- [ ] **Completar `LEGAL` en `lib/marca.ts`** (titular o razón social, CUIT,
-      domicilio y email de privacidad). Mientras falten, las tres páginas
-      legales muestran un aviso de «borrador sin publicar» en lugar de inventar
-      datos.
+El proyecto está en **modo piloto** (`MODO_PILOTO` en `lib/marca.ts`): un solo
+cliente, sin cargo, sin comercialización. En esa etapa las páginas legales dicen
+exactamente eso en lugar de publicar una identificación que todavía no existe, y
+dan el email del proyecto como canal de contacto real. No se inventa nada y no se
+muestran huecos.
+
+`estadoLegal()` decide qué se publica:
+
+| Estado | Cuándo | Qué se ve |
+|---|---|---|
+| `completo` | `LEGAL` tiene titular, CUIT, domicilio y email | La identificación completa. Sin aviso |
+| `piloto` | Falta alguno y `MODO_PILOTO` está en `true` | Nota sobria: «etapa de prueba», con el email de contacto |
+| `incompleto` | Falta alguno y `MODO_PILOTO` está en `false` | Aviso rojo de borrador sin publicar |
+
+`completo` gana siempre, así que al cargar los datos el modo piloto se apaga
+solo y no hay que acordarse de nada.
+
+## Pendiente antes de lanzar comercialmente
+
+- [ ] **Completar `LEGAL` en `lib/marca.ts`** (titular o razón social, CUIT y
+      domicilio) y poner `MODO_PILOTO` en `false`. El email ya está cargado.
+      Esto es lo que corresponde hacer *antes* de cobrarle a alguien: publicar
+      precios al público sin identificar al oferente es el riesgo concreto.
 - [ ] Dominio propio y `NEXT_PUBLIC_SITE_URL`, **antes** de mandar a imprimir.
 - [ ] Definir precio de las tarjetas de repuesto.
 - [ ] Definir medio de pago y cobro. Lo que sí está resuelto técnicamente: la

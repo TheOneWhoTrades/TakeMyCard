@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import { DatoLegal, Documento } from '@/components/legal/Documento'
-import { LEGAL, MARCA } from '@/lib/marca'
+import { Documento, EmailContacto } from '@/components/legal/Documento'
+import { MARCA } from '@/lib/marca'
 
 export const metadata = {
   title: 'Política de cookies',
@@ -105,7 +105,7 @@ export default function PaginaCookies() {
       <h2>Consultas</h2>
       <p>
         Cualquier duda sobre esta política:{' '}
-        <DatoLegal valor={LEGAL.emailPrivacidad} que="el email de privacidad" />.
+        <EmailContacto asunto="Consulta sobre cookies" />.
       </p>
     </Documento>
   )

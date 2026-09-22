@@ -4,6 +4,8 @@ import { Logo, Marca } from '@/components/Logo'
 import { PieSitio } from '@/components/PieSitio'
 import {
   COMPARATIVA,
+  CTA_ASESOR,
+  CTA_PLAN,
   linkWhatsapp,
   MARCA,
   MENSAJES,
@@ -11,6 +13,7 @@ import {
   PLANES,
   PREGUNTAS,
   SLUG_DEMO,
+  esPiloto,
   type FilaComparativa,
 } from '@/lib/marca'
 
@@ -81,7 +84,7 @@ export default function Home() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Pedir presupuesto
+              {CTA_ASESOR}
             </a>
             <Link className="btn btn--grande" href={`/${SLUG_DEMO}`}>
               Ver una tarjeta de ejemplo
@@ -181,8 +184,13 @@ export default function Home() {
                   href={linkWhatsapp(MENSAJES.plan(plan.nombre))}
                   target="_blank"
                   rel="noopener noreferrer"
+                  /* Los tres botones dicen lo mismo, así que el nombre
+                     accesible lleva el plan: quien navega por botones con un
+                     lector de pantalla escucharía tres veces «Quiero mi
+                     tarjeta» sin saber cuál es cuál. */
+                  aria-label={`${CTA_PLAN} — plan ${plan.nombre}`}
                 >
-                  {plan.cta}
+                  {CTA_PLAN}
                 </a>
               </article>
             ))}
@@ -240,6 +248,15 @@ export default function Home() {
             Precios en dólares, se abonan en pesos al cambio del día. Las tarjetas de
             repuesto se venden aparte. Las condiciones completas están en los{' '}
             <Link href="/terminos">términos y condiciones</Link>.
+            {/* Mientras no haya identificación completa del oferente, publicar
+                precios al público conviene acompañarlo de la etapa real del
+                proyecto. Desaparece solo al cargar los datos en LEGAL. */}
+            {esPiloto() && (
+              <>
+                {' '}
+                Estamos en etapa de prueba: son los precios previstos para el lanzamiento.
+              </>
+            )}
           </p>
         </section>
 

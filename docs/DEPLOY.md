@@ -52,9 +52,10 @@ permite controlar ese encabezado.
      específico y no un 404 genérico
    - `https://<tu-deploy>.vercel.app/login` entra al backoffice, y
      `/ingresar` al panel del cliente
-   - `/privacidad`, `/terminos` y `/cookies` **no** muestran el aviso de
-     "borrador sin publicar" (si lo muestran, faltan los datos de `LEGAL` en
-     `lib/marca.ts`)
+   - `/privacidad`, `/terminos` y `/cookies` muestran la nota de «etapa de
+     prueba» con el email de contacto, no el aviso rojo de "borrador sin
+     publicar". Si aparece el rojo, alguien apagó `MODO_PILOTO` sin cargar los
+     datos de `LEGAL` en `lib/marca.ts`
 
 ## Dominio propio
 

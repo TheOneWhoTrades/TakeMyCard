@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import { DatoLegal, Documento } from '@/components/legal/Documento'
-import { LEGAL, MARCA, PLANES } from '@/lib/marca'
+import { DatoLegal, Documento, EmailContacto } from '@/components/legal/Documento'
+import { esPiloto, LEGAL, MARCA, PLANES } from '@/lib/marca'
 
 export const metadata = {
   title: 'Términos y condiciones',
@@ -15,17 +15,38 @@ export default function PaginaTerminos() {
       bajada={`Las reglas del servicio: qué contratás, qué te damos, qué pasa si dejás de pagar y qué no podés publicar.`}
     >
       <h2>1. Quiénes somos y qué alcanza este documento</h2>
-      <p>
-        Estos términos regulan la contratación y el uso de los servicios de{' '}
-        {MARCA.nombre}, prestados por{' '}
-        <DatoLegal valor={LEGAL.titular} que="el titular o razón social" />, CUIT{' '}
-        <DatoLegal valor={LEGAL.cuit} que="el CUIT" />, con domicilio en{' '}
-        <DatoLegal valor={LEGAL.domicilio} que="el domicilio" />, {MARCA.provincia}.
-      </p>
-      <p>
-        Al contratar cualquiera de los planes o al usar el sitio, aceptás estas
-        condiciones. Si no estás de acuerdo con alguna, no contrates el servicio.
-      </p>
+      {esPiloto() ? (
+        <>
+          <p>
+            {MARCA.nombre} es un proyecto radicado en {MARCA.provincia}, actualmente en
+            etapa de <strong>prueba piloto</strong>. El servicio todavía no se
+            comercializa: los precios que figuran en este sitio son los previstos para el
+            lanzamiento y no constituyen, por ahora, una oferta vinculante.
+          </p>
+          <p>
+            Estos términos describen las condiciones con las que el servicio va a
+            prestarse, y se publican desde ahora para que cualquiera pueda leerlas antes
+            de que exista la primera contratación. Al lanzamiento comercial se completan
+            con los datos de identificación del prestador (razón social, CUIT y domicilio
+            legal) y pasan a regir plenamente. Consultas:{' '}
+            <EmailContacto asunto="Consulta sobre los términos" />.
+          </p>
+        </>
+      ) : (
+        <>
+          <p>
+            Estos términos regulan la contratación y el uso de los servicios de{' '}
+            {MARCA.nombre}, prestados por{' '}
+            <DatoLegal valor={LEGAL.titular} que="el titular o razón social" />, CUIT{' '}
+            <DatoLegal valor={LEGAL.cuit} que="el CUIT" />, con domicilio en{' '}
+            <DatoLegal valor={LEGAL.domicilio} que="el domicilio" />, {MARCA.provincia}.
+          </p>
+          <p>
+            Al contratar cualquiera de los planes o al usar el sitio, aceptás estas
+            condiciones. Si no estás de acuerdo con alguna, no contrates el servicio.
+          </p>
+        </>
+      )}
 
       <h2>2. Qué es el servicio</h2>
       <p>
@@ -184,8 +205,8 @@ export default function PaginaTerminos() {
         tenés <strong>10 días corridos</strong> desde la contratación o desde la entrega de
         las tarjetas —lo que ocurra último— para arrepentirte sin expresar causa y sin
         costo, conforme al art. 34 de la Ley 24.240. Para ejercerlo, escribinos a{' '}
-        <DatoLegal valor={LEGAL.emailPrivacidad} que="el email de contacto" />. Las
-        tarjetas físicas deben devolverse en el estado en que se recibieron.
+        <EmailContacto asunto="Derecho de arrepentimiento" />. Las tarjetas físicas deben
+        devolverse en el estado en que se recibieron.
       </p>
 
       <h2>11. Baja del servicio</h2>
