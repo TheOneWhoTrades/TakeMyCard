@@ -57,11 +57,21 @@ export default function Home() {
       <div className="sitio">
         <header className="masthead">
           <Marca className="marca" />
-          <p className="masthead__meta">
-            {MARCA.provincia}
-            <br />
-            Est. 2026
-          </p>
+
+          {/* El acceso al panel vivía sólo en el pie, en letra chica. El cliente
+              que entra a editar su página no viene a leer la home: viene a
+              entrar, y tiene que encontrar por dónde sin scrollear hasta el
+              fondo. */}
+          <div className="masthead__acciones">
+            <p className="masthead__meta">
+              {MARCA.provincia}
+              <br />
+              Est. 2026
+            </p>
+            <Link href="/ingresar" className="btn btn--mini">
+              Ingresar a mi panel
+            </Link>
+          </div>
         </header>
 
         {/* --- Portada --------------------------------------------------- */}
@@ -274,6 +284,58 @@ export default function Home() {
               </article>
             ))}
           </div>
+        </section>
+
+        {/* --- Cuenta ------------------------------------------------------ */}
+        <section className="seccion" id="cuenta">
+          <p className="volanta">¿Ya sos cliente?</p>
+          <h2 className="seccion__titulo">Tu panel de autoedición</h2>
+          <p className="seccion__bajada">
+            Con los planes Plus y Premium editás tu página vos mismo: tus datos, tus
+            botones, tus fotos y tu color, desde el celular y sin pedirle permiso a nadie.
+          </p>
+          <hr className="filete" />
+
+          <div className="cuenta">
+            <div className="cuenta__paso">
+              <span className="columna__numero">1</span>
+              <h3 className="columna__titulo">Creás tu cuenta</h3>
+              <p>
+                Con tu email y una contraseña. Usá el mismo email que nos diste al
+                contratar.
+              </p>
+            </div>
+            <div className="cuenta__paso">
+              <span className="columna__numero">2</span>
+              <h3 className="columna__titulo">La habilitamos nosotros</h3>
+              <p>
+                Vinculamos tu cuenta con tu tarjeta. Hasta que lo hacemos, la cuenta no
+                abre nada: es el paso que nos asegura que sos vos.
+              </p>
+            </div>
+            <div className="cuenta__paso">
+              <span className="columna__numero">3</span>
+              <h3 className="columna__titulo">Editás cuando quieras</h3>
+              <p>
+                Entrás con tu email —con contraseña o con un enlace de un solo uso— y los
+                cambios se ven al toque en todas tus tarjetas.
+              </p>
+            </div>
+          </div>
+
+          <div className="cuenta__acciones">
+            <Link className="btn btn--primario btn--grande" href="/crear-cuenta">
+              Crear mi cuenta
+            </Link>
+            <Link className="btn btn--grande" href="/ingresar">
+              Ya tengo cuenta, quiero entrar
+            </Link>
+          </div>
+
+          <p className="seccion__pie">
+            Con el plan Básico no hace falta cuenta: los cambios los hacemos nosotros
+            cuando los pedís.
+          </p>
         </section>
 
         {/* --- Contacto ---------------------------------------------------- */}

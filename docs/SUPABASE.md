@@ -37,12 +37,20 @@ guarda `tudominio.com/t/<codigo_corto>` y lo que cambia es la fila.
    Sin este `insert` el login funciona pero el panel rebota con
    "tu cuenta no tiene permisos": tener cuenta y ser admin son cosas distintas.
 
-5. **Habilitar el enlace de un solo uso** para los clientes (Plus y Premium).
-   En *Authentication → Providers → Email*, dejar habilitado *Email* y
-   **desactivar** *Enable sign-ups* si no querés que cualquiera se cree una
-   cuenta: la app ya pide `shouldCreateUser: false`, así que el enlace sólo
-   funciona para cuentas que existan. En *Authentication → URL Configuration*,
-   agregar a *Redirect URLs*:
+5. **Configurar el ingreso de los clientes** (Plus y Premium). En
+   *Authentication → Providers → Email*, dejar habilitado *Email* y **dejar
+   activado** *Enable sign-ups*: lo necesita la página `/crear-cuenta`.
+
+   Que el registro esté abierto no abre nada: una cuenta recién creada no tiene
+   perfil vinculado, y todas las políticas de RLS parten de
+   `profiles.user_id = auth.uid()`, así que no puede leer ni escribir una sola
+   fila. El alta real la hacés vos desde el backoffice. Conviene además dejar
+   activado *Confirm email*, para que no se creen cuentas con emails ajenos.
+
+   El ingreso por enlace de un solo uso sí pide `shouldCreateUser: false`: ese
+   camino nunca crea cuentas, sólo abre sesión en las que ya existen.
+
+   En *Authentication → URL Configuration*, agregar a *Redirect URLs*:
 
    ```
    https://<tu-dominio>/auth/callback
@@ -78,15 +86,25 @@ guarda `tudominio.com/t/<codigo_corto>` y lo que cambia es la fila.
 ## Dar de alta un cliente
 
 1. En `/admin` → *Nuevo perfil*: nombre, slug y plan.
-2. Cargar fotos, botones y datos de contacto (o dejar que lo haga el cliente si
-   es Plus o Premium).
-3. **Si es Plus o Premium**, para que pueda entrar a `/panel`:
-   - crear su cuenta en *Authentication → Users → Add user* (o *Invite*);
-   - en `/admin/<id>` → *Acceso del cliente*, pegar ese email y tocar *Vincular*.
+2. Cargar fotos, botones, color y datos de contacto (o dejar que lo haga el
+   cliente si es Plus o Premium).
+3. **Si es Plus o Premium**, para que pueda entrar a `/panel`, hay dos caminos
+   y el resultado es el mismo: el perfil tiene que quedar con `user_id`.
+
+   - **El cliente se crea la cuenta** en `/crear-cuenta` y te avisa. Aparece
+     sola en `/admin` → *Cuentas esperando alta*: elegís su perfil en el select
+     y tocás *Vincular*. Es el camino normal, y evita tipear emails a mano.
+   - **La creás vos** en *Authentication → Users → Add user* (con *Auto Confirm
+     User*) y después, en `/admin/<id>` → *Acceso del cliente*, pegás el email y
+     tocás *Vincular*. Sirve cuando el cliente no quiere hacer el trámite.
+
 4. Grabar en el chip la URL que muestra la pantalla de edición, arriba de todo:
    `https://<dominio>/t/<codigo_corto>`. **No** grabar `/slug` directo.
 5. Registrar las tarjetas entregadas en *Tarjetas físicas*, para llevar la
    cuenta de las dos incluidas y de las reposiciones.
+
+> Una cuenta sin vincular es inofensiva: quien entra con ella sólo ve el aviso
+> de «tu cuenta todavía no está vinculada a ninguna tarjeta». No hay apuro.
 
 ## Tablas
 
@@ -216,6 +234,10 @@ Detalles que no son obvios:
   podría distinguirlos. Devuelve sólo el estado, nunca el contenido de la fila.
 - **`slug_por_codigo()` también.** Tiene que encontrar los perfiles pausados,
   para que la tarjeta lleve al aviso de «pausada» en vez de a un 404 seco.
+- **`cuentas_sin_perfil()` es `SECURITY DEFINER` y chequea admin primero.** Lee
+  `auth.users`, que con la clave pública es inalcanzable; el chequeo va explícito
+  y antes de la consulta porque, sin él, la función sería una lista de emails de
+  clientes abierta a cualquiera que supiera invocarla. El test lo verifica.
 - **El bucket `fotos` es público pero `anon` no puede *listarlo*.** Las imágenes
   se sirven por `/storage/v1/object/public/...`, que no pasa por RLS; la
   política de lectura para `anon` sólo habilitaba enumerar el bucket por la API

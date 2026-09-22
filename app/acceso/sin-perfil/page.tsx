@@ -15,8 +15,13 @@ export default function SinPerfil() {
       <p className="aviso__emoji">🗂️</p>
       <h1 className="aviso__titulo">Ese email no tiene una tarjeta asociada</h1>
       <p className="aviso__texto">
-        Entraste bien, pero tu cuenta no está vinculada a ningún perfil. Suele pasar
-        cuando el mail con el que ingresás no es el mismo que nos diste al contratar.
+        Entraste bien, pero tu cuenta todavía no está vinculada a ninguna tarjeta. Es
+        normal si <strong>acabás de crear la cuenta</strong>: el último paso lo hacemos
+        nosotros. Escribinos y la habilitamos.
+      </p>
+      <p className="aviso__texto">
+        También pasa cuando el email con el que ingresás no es el mismo que nos diste al
+        contratar.
       </p>
       <p
         style={{

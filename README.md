@@ -52,10 +52,15 @@ contra la base y redirige al perfil.
 un solo uso o contraseña), edición de datos, botones, datos de contacto, fotos
 con recorte y vista previa. En Premium, además, estadísticas.
 
-**Backoffice** (`/admin`) — alta de perfiles, asignación de plan y de slug,
-edición de cualquier perfil (es como operamos el Básico), pausar y reactivar,
-vincular la cuenta del cliente, registro de tarjetas físicas entregadas y
-métricas.
+**Alta de cuenta** (`/crear-cuenta`) — el cliente se crea la cuenta solo.
+Crearla no le da acceso a nada: sin un perfil vinculado, RLS no le devuelve una
+sola fila. El alta real —vincular la cuenta con un perfil— la hacemos nosotros
+desde el backoffice, donde las cuentas pendientes aparecen listadas.
+
+**Backoffice** (`/admin`) — alta de perfiles, asignación de plan, de slug y de
+color, edición de cualquier perfil (es como operamos el Básico), pausar y
+reactivar, vincular la cuenta del cliente (incluidas las que se crearon solas y
+están esperando), registro de tarjetas físicas entregadas y métricas.
 
 **Páginas legales** (`/privacidad`, `/terminos`, `/cookies`).
 
@@ -117,6 +122,7 @@ app/
   panel/                   Panel de autoedición del cliente (Plus y Premium)
   admin/                   Backoffice nuestro
   ingresar/                Ingreso de clientes (enlace por email o contraseña)
+  crear-cuenta/            Alta de cuenta del cliente, inerte hasta vincularla
   login/                   Ingreso de administradores
   auth/callback/           Aterrizaje del enlace de un solo uso
   acceso/                  "No tenés tarjeta" / "tu plan no incluye panel"

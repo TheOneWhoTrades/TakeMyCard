@@ -12,7 +12,8 @@ export function PieSitio() {
         <Link href="/privacidad">Privacidad</Link>
         <Link href="/terminos">Términos</Link>
         <Link href="/cookies">Cookies</Link>
-        <Link href="/ingresar">Ingresar a mi panel</Link>
+        <Link href="/ingresar">Ingresar</Link>
+        <Link href="/crear-cuenta">Crear cuenta</Link>
       </nav>
     </footer>
   )

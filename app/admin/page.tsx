@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { requerirAdmin } from '@/lib/auth'
 import type { Profile } from '@/lib/types'
+import { CuentasPendientes, type CuentaPendiente } from './CuentasPendientes'
 import { alternarActivo } from './actions'
 
 export const dynamic = 'force-dynamic'
@@ -8,11 +9,17 @@ export const dynamic = 'force-dynamic'
 export default async function PaginaAdmin() {
   const { supabase } = await requerirAdmin()
 
-  const { data: profiles, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .returns<Profile[]>()
+  const [{ data: profiles, error }, { data: pendientes, error: errorPendientes }] =
+    await Promise.all([
+      supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .returns<Profile[]>(),
+      supabase.rpc('cuentas_sin_perfil'),
+    ])
+
+  const cuentas = (pendientes as CuentaPendiente[] | null) ?? []
 
   return (
     <>
@@ -83,6 +90,24 @@ export default async function PaginaAdmin() {
             ))}
           </tbody>
         </table>
+      )}
+
+      <h2>Cuentas esperando alta ({cuentas.length})</h2>
+      {errorPendientes ? (
+        <div className="mensaje mensaje--error">
+          No se pudo leer la lista de cuentas pendientes: {errorPendientes.message}. Si
+          dice que la función no existe, falta aplicar la última migración.
+        </div>
+      ) : (
+        <CuentasPendientes
+          cuentas={cuentas}
+          perfiles={(profiles ?? []).map((p) => ({
+            id: p.id,
+            nombre: p.nombre,
+            slug: p.slug,
+            plan: p.plan,
+          }))}
+        />
       )}
     </>
   )

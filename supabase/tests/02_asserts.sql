@@ -131,5 +131,30 @@ begin
   select count(*) into n from public.events where profile_id = v_pausado;
   if n <> 0 then raise exception 'FALLA: se registraron eventos de un perfil pausado'; end if;
 
+  -- === La lista de cuentas pendientes es sólo para administradores ==========
+  -- Es una lista de emails de clientes: filtrarla en la interfaz no alcanza.
+  set local role authenticated;
+  perform set_config('request.jwt.claim.sub','aaaaaaaa-0000-0000-0000-000000000004', true);
+  begin
+    perform public.cuentas_sin_perfil();
+    raise exception 'FALLA: un usuario cualquiera pudo listar las cuentas pendientes';
+  exception
+    when others then
+      if sqlerrm like 'FALLA:%' then raise; end if;  -- lo esperado es el rechazo
+  end;
+  reset role;
+  perform set_config('request.jwt.claim.sub','', true);
+
+  -- El admin sí la ve, y no se lista a sí mismo ni a quien ya tiene perfil.
+  set local role authenticated;
+  perform set_config('request.jwt.claim.sub','aaaaaaaa-0000-0000-0000-000000000001', true);
+  select count(*) into n from public.cuentas_sin_perfil()
+   where email in ('assert-admin@takemycard.ar','assert-premium@ejemplo.com');
+  if n <> 0 then
+    raise exception 'FALLA: cuentas_sin_perfil lista cuentas que ya tienen perfil o son admin';
+  end if;
+  reset role;
+  perform set_config('request.jwt.claim.sub','', true);
+
   raise notice 'TODAS LAS ASERCIONES DE SEGURIDAD PASARON';
 end $$;

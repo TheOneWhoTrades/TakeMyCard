@@ -36,6 +36,8 @@ export default async function PaginaIngresar({
       <FormularioIngreso next={next ?? '/panel'} />
 
       <p className="login__pie">
+        ¿Todavía no tenés cuenta? <Link href="/crear-cuenta">Creala acá</Link>.
+        <br />
         ¿Sos administrador de {MARCA.nombre}? <Link href="/login">Entrá por acá</Link>.
       </p>
     </main>
