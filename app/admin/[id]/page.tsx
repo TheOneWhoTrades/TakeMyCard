@@ -71,6 +71,8 @@ export default async function PaginaEditarPerfil({
       supabase.rpc('metricas_perfil', { p_profile_id: profile.id, p_dias: dias }),
     ])
 
+  const tieneTarjetasRegistradas = (cards?.length ?? 0) > 0
+
   return (
     <>
       <p>
@@ -155,17 +157,28 @@ export default async function PaginaEditarPerfil({
       <h2>Zona peligrosa</h2>
       <div className="tarjeta">
         <p className="vacio" style={{ padding: 0, marginBottom: '0.75rem' }}>
-          Eliminar borra el perfil, sus links, sus datos de contacto, sus estadísticas y
-          su registro de tarjetas, para siempre. Si la tarjeta física ya está entregada,
-          conviene <strong>pausar</strong> en vez de eliminar: la dirección queda
-          reservada y la página muestra un aviso.
+          {tieneTarjetasRegistradas ? (
+            <>
+              Este perfil tiene tarjetas físicas registradas y no se puede eliminar. Para que
+              dejen de mostrar el contenido, <strong>pausalo</strong>: la dirección NFC queda
+              reservada y muestra un aviso.
+            </>
+          ) : (
+            <>
+              Eliminar borra el perfil, sus links, sus datos de contacto y sus estadísticas,
+              para siempre. Usalo sólo para un alta creada por error antes de programar o
+              registrar tarjetas físicas.
+            </>
+          )}
         </p>
-        <form action={eliminarPerfil}>
-          <input type="hidden" name="id" value={profile.id} />
-          <button type="submit" className="btn btn--peligro">
-            Eliminar perfil
-          </button>
-        </form>
+        {!tieneTarjetasRegistradas && (
+          <form action={eliminarPerfil}>
+            <input type="hidden" name="id" value={profile.id} />
+            <button type="submit" className="btn btn--peligro">
+              Eliminar perfil
+            </button>
+          </form>
+        )}
       </div>
     </>
   )

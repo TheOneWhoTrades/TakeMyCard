@@ -70,6 +70,15 @@ begin
     raise exception 'FALLA: el referrer guardado es "%", deberia ser solo el dominio', t;
   end if;
 
+  -- === Una tarjeta física no pierde su destino por un borrado ===============
+  begin
+    delete from public.profiles where id = v_premium;
+    raise exception 'FALLA: se pudo eliminar un perfil con tarjeta física registrada';
+  exception
+    when others then
+      if sqlerrm like 'FALLA:%' then raise; end if;
+  end;
+
   -- === Un cliente no puede tocar lo que no es suyo ==========================
   set local role authenticated;
   perform set_config('request.jwt.claim.sub','aaaaaaaa-0000-0000-0000-000000000002', true);
