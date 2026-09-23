@@ -64,13 +64,27 @@ export async function POST(request: Request) {
     typeof referrer === 'string' && referrer.length > 0 ? referrer.slice(0, 300) : null
 
   try {
-    await supabasePublico().rpc('registrar_evento', {
+    const cliente = supabasePublico()
+    const { error } = await cliente.rpc('registrar_evento', {
       p_slug: slug,
       p_tipo: tipo,
       p_link_id: link,
       p_referrer: origen,
       p_accion: tipo === 'vista' ? 'perfil' : accion,
     })
+
+    // El frontend puede llegar a Vercel antes que la migración a Supabase.
+    // Durante ese lapso, las vistas y clics de links conservan el RPC anterior
+    // de cuatro argumentos; "Guardar contacto" queda pendiente de la nueva
+    // migración, porque el esquema anterior no puede representarlo.
+    if (error && accion !== 'guardar_contacto') {
+      await cliente.rpc('registrar_evento', {
+        p_slug: slug,
+        p_tipo: tipo,
+        p_link_id: link,
+        p_referrer: origen,
+      })
+    }
   } catch {
     // Si la analítica falla, falla sola. No es parte del producto que el
     // visitante vino a usar.

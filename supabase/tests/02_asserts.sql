@@ -66,7 +66,11 @@ begin
   reset role;
 
   -- === El referrer nunca guarda la URL completa =============================
-  select referrer into t from public.events where profile_id = v_premium limit 1;
+  -- "Guardar contacto" no tiene origen: buscamos explícitamente la vista
+  -- que sí lo trae, en vez de depender del orden físico de las filas.
+  select referrer into t from public.events
+  where profile_id = v_premium and referrer is not null
+  limit 1;
   if t is distinct from 'ejemplo.com' then
     raise exception 'FALLA: el referrer guardado es "%", deberia ser solo el dominio', t;
   end if;
