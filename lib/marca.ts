@@ -325,7 +325,7 @@ export const PREGUNTAS = [
   },
   {
     p: '¿Cuánto dura la tarjeta?',
-    r: 'El chip no tiene batería ni se gasta con el uso. Es plástico: te va a durar lo que dura una tarjeta de crédito en tu billetera.',
+    r: 'El chip no tiene batería ni se gasta con el uso. La tarjeta está pensada para acompañarte todos los días, como las demás que llevás en la billetera.',
   },
   {
     p: '¿Puedo tener más de una tarjeta?',
