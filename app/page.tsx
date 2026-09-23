@@ -171,7 +171,8 @@ export default function Home() {
           <h2 className="seccion__titulo">Elegí hasta dónde querés llegar</h2>
           <p className="seccion__bajada">
             Los tres incluyen dos tarjetas físicas y tu página propia. La diferencia está
-            en cuánto control tenés vos y cuánto querés saber sobre quién te contacta.
+            en cuánto control tenés sobre tu página y qué uso recibe. Las métricas cuentan
+            aperturas y botones tocados, sin identificar a las personas que la visitan.
           </p>
           <hr className="filete" />
 
