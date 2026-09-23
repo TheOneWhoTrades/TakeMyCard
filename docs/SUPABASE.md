@@ -219,7 +219,9 @@ Detalles que no son obvios:
 - **`es_admin()` y `puede_autoeditar()` son `SECURITY DEFINER`.** Si no lo
   fueran, consultar `admin_users` desde una política de `admin_users` entraría
   en recursión infinita, y las políticas de `links` volverían a pasar por las de
-  `profiles`.
+  `profiles`. Sus referencias a tablas están calificadas con esquema y su
+  `search_path` es vacío: una función privilegiada no debe resolver nombres
+  desde un esquema que pudiera contener objetos de otra persona.
 - **Las políticas de autoedición repiten las condiciones en `WITH CHECK`.** Sin
   eso, el cliente podría cambiarse el `plan` o reasignar `user_id`.
 - **Además hay un trigger, `proteger_campos_de_negocio`.** Impide que un

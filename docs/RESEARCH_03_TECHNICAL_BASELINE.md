@@ -70,9 +70,10 @@ mantenerse bajo control de la identidad del proyecto.
 
 La arquitectura actual va en la dirección correcta: cliente público con clave
 anon, RLS para cada tabla expuesta y operaciones excepcionalmente privilegiadas
-en funciones acotadas. Antes de desplegar cambios de base se debe revisar cada
-función `SECURITY DEFINER`: permisos mínimos, `search_path` fijo, objetos con
-esquema calificado y pruebas de autorización positivas y negativas.
+en funciones acotadas. Las funciones `SECURITY DEFINER` vigentes fijan un
+`search_path` vacío y usan objetos con esquema calificado. Antes de desplegar
+cambios de base se debe revisar que se conserven permisos mínimos y pruebas de
+autorización positivas y negativas.
 
 Para eventos se conserva únicamente lo necesario para vistas/clics agregados:
 perfil, tipo de evento, link opcional, fecha y, si aporta valor, el host del
