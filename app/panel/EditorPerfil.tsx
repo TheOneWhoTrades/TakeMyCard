@@ -42,6 +42,8 @@ export function EditorPerfil({ profile }: { profile: Profile }) {
   const [profesion, setProfesion] = useState(profile.profesion ?? '')
   const [bio, setBio] = useState(profile.bio ?? '')
   const [paleta, setPaleta] = useState(profile.paleta)
+  const [fotoUrl, setFotoUrl] = useState(profile.foto_url)
+  const [portadaUrl, setPortadaUrl] = useState(profile.portada_url)
 
   const colores = obtenerPaleta(paleta)
 
@@ -101,6 +103,7 @@ export function EditorPerfil({ profile }: { profile: Profile }) {
             valorInicial={profile.foto_url}
             etiqueta="Foto de perfil"
             ayuda="Cuadrada. Se recorta acá mismo antes de subirla."
+            onCambio={setFotoUrl}
           />
 
           {capacidades.portada ? (
@@ -111,6 +114,7 @@ export function EditorPerfil({ profile }: { profile: Profile }) {
               valorInicial={profile.portada_url}
               etiqueta="Foto de portada"
               ayuda="Apaisada, va arriba de todo. Es también la imagen que se ve al compartir tu página."
+              onCambio={setPortadaUrl}
             />
           ) : (
             // El valor se conserva aunque el plan no la muestre: si sube de
@@ -158,9 +162,9 @@ export function EditorPerfil({ profile }: { profile: Profile }) {
       <aside className="editor__previa">
         <p className="volanta">Vista previa</p>
         <div className="previa" style={variablesDePaleta(colores)}>
-          {capacidades.portada && profile.portada_url && (
+          {capacidades.portada && portadaUrl && (
             <Image
-              src={profile.portada_url}
+              src={portadaUrl}
               alt=""
               width={320}
               height={107}
@@ -169,9 +173,9 @@ export function EditorPerfil({ profile }: { profile: Profile }) {
             />
           )}
           <div className="previa__cuerpo">
-            {profile.foto_url ? (
+            {fotoUrl ? (
               <Image
-                src={profile.foto_url}
+                src={fotoUrl}
                 alt=""
                 width={64}
                 height={64}

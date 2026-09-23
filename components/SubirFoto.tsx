@@ -31,6 +31,8 @@ type Props = {
   valorInicial: string | null
   etiqueta: string
   ayuda?: string
+  /** Avisa al contexto que muestra una vista previa después de confirmar el recorte. */
+  onCambio?: (url: string | null) => void
 }
 
 const FORMATO = {
@@ -41,7 +43,7 @@ const FORMATO = {
 /** 12 MB: por encima casi seguro es un archivo de cámara sin procesar. */
 const MAX_BYTES = 12 * 1024 * 1024
 
-export function SubirFoto({ profileId, name, tipo, valorInicial, etiqueta, ayuda }: Props) {
+export function SubirFoto({ profileId, name, tipo, valorInicial, etiqueta, ayuda, onCambio }: Props) {
   const formato = FORMATO[tipo]
   const altoVista = Math.round(formato.anchoVista / formato.relacion)
 
@@ -186,6 +188,7 @@ export function SubirFoto({ profileId, name, tipo, valorInicial, etiqueta, ayuda
 
       const { data } = supabase.storage.from('fotos').getPublicUrl(ruta)
       setUrl(data.publicUrl)
+      onCambio?.(data.publicUrl)
       descartar()
     } catch (e) {
       setError(
@@ -299,7 +302,14 @@ export function SubirFoto({ profileId, name, tipo, valorInicial, etiqueta, ayuda
               />
             </label>
             {url && (
-              <button type="button" className="btn btn--mini" onClick={() => setUrl(null)}>
+              <button
+                type="button"
+                className="btn btn--mini"
+                onClick={() => {
+                  setUrl(null)
+                  onCambio?.(null)
+                }}
+              >
                 Quitar
               </button>
             )}
