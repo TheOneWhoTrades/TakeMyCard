@@ -317,7 +317,7 @@ export const PASOS = [
 export const PREGUNTAS = [
   {
     p: '¿Hace falta que el otro tenga una app?',
-    r: 'No. El NFC ya viene en los celulares desde hace años y funciona con la pantalla encendida, sin instalar nada. Si un teléfono muy viejo no lo tuviera, la tarjeta igual lleva tu dirección escrita para que la puedan abrir a mano.',
+    r: 'No en un teléfono compatible: al acercar la tarjeta se abre la página web, sin instalar una app. La compatibilidad depende del modelo y de su configuración; por eso cada tarjeta también lleva su dirección escrita para abrirla a mano si hace falta.',
   },
   {
     p: '¿Y si cambio de teléfono, de trabajo o de redes?',

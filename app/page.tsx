@@ -84,8 +84,8 @@ export default function Home() {
           </h1>
           <p className="portada__bajada">
             Acercás tu tarjeta a un teléfono y se abre tu página: tu WhatsApp, tus redes,
-            tu ubicación y tu agenda. Sin apps, sin escanear nada, sin que nadie escriba
-            tu nombre mal. Y te guardan el contacto de un toque.
+            tu ubicación y tu agenda. En teléfonos compatibles, sin apps ni escanear nada, sin
+            que nadie escriba tu nombre mal. Y te guardan el contacto de un toque.
           </p>
           <div className="portada__acciones">
             <a
