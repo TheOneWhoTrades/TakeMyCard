@@ -35,6 +35,7 @@ insert into public.cards (profile_id, reposicion)
   select id, false from public.profiles where slug='assert-premium';
 
 select public.registrar_evento('assert-premium','vista',null,'https://ejemplo.com/una/ruta?q=secreto');
+select public.registrar_evento('assert-premium','clic',null,null,'guardar_contacto');
 
 do $$
 declare
@@ -68,6 +69,13 @@ begin
   select referrer into t from public.events where profile_id = v_premium limit 1;
   if t is distinct from 'ejemplo.com' then
     raise exception 'FALLA: el referrer guardado es "%", deberia ser solo el dominio', t;
+  end if;
+
+  select clics into n
+  from public.metricas_perfil(v_premium, 30)
+  where categoria = 'guardar_contacto';
+  if n is distinct from 1 then
+    raise exception 'FALLA: Guardar contacto no aparece como evento propio';
   end if;
 
   -- === Una tarjeta física no pierde su destino por un borrado ===============

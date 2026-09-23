@@ -105,6 +105,7 @@ export type Card = {
 
 /** Una fila del panel de estadísticas (RPC `metricas_perfil`). */
 export type Metrica = {
+  categoria: 'perfil' | 'link' | 'guardar_contacto'
   link_id: string | null
   etiqueta: string
   vistas: number

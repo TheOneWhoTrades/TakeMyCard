@@ -46,15 +46,17 @@ export async function POST(request: Request) {
   }
 
   if (typeof cuerpo !== 'object' || cuerpo === null) return ok()
-  const { slug, tipo, linkId, referrer } = cuerpo as Record<string, unknown>
+  const { slug, tipo, linkId, referrer, accion } = cuerpo as Record<string, unknown>
 
   // Todo lo que no encaje se descarta en silencio. Un 400 no le sirve a nadie
   // --nadie lee la respuesta de un beacon-- y devolver detalle del error sólo
   // le facilitaría el trabajo a quien esté probando qué acepta el endpoint.
   if (typeof slug !== 'string' || !SLUG.test(slug)) return ok()
   if (tipo !== 'vista' && tipo !== 'clic') return ok()
+  if (tipo === 'clic' && accion !== 'link' && accion !== 'guardar_contacto') return ok()
 
-  const link = typeof linkId === 'string' && UUID.test(linkId) ? linkId : null
+  const link =
+    accion === 'guardar_contacto' ? null : typeof linkId === 'string' && UUID.test(linkId) ? linkId : null
 
   // El cliente público manda sólo un host. Se recorta por defensa ante llamadas
   // directas y el RPC lo valida otra vez antes de persistirlo.
@@ -67,6 +69,7 @@ export async function POST(request: Request) {
       p_tipo: tipo,
       p_link_id: link,
       p_referrer: origen,
+      p_accion: tipo === 'vista' ? 'perfil' : accion,
     })
   } catch {
     // Si la analítica falla, falla sola. No es parte del producto que el

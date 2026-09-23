@@ -12,6 +12,7 @@ export function BotonGuardarContacto({ slug, nombre }: { slug: string; nombre: s
       className="boton boton--principal"
       href={`/${slug}/vcard`}
       download={`${slug}.vcf`}
+      data-evento="guardar_contacto"
       aria-label={`Guardar el contacto de ${nombre} en la agenda`}
     >
       {/* Ficha de contacto, al mismo trazo que el resto de los íconos. */}

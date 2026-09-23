@@ -30,8 +30,8 @@ export function Metricas({
   /** Ruta sobre la que se arman los links de período. */
   base: string
 }) {
-  const total = metricas.find((m) => m.link_id === null)
-  const botones = metricas.filter((m) => m.link_id !== null)
+  const total = metricas.find((m) => m.categoria === 'perfil')
+  const botones = metricas.filter((m) => m.categoria !== 'perfil')
   const maximo = Math.max(1, ...botones.map((b) => b.clics))
 
   const vistas = total?.vistas ?? 0
@@ -75,7 +75,7 @@ export function Metricas({
       ) : (
         <ul className="ranking">
           {botones.map((boton) => (
-            <li key={boton.link_id} className="ranking__fila">
+            <li key={boton.link_id ?? boton.categoria} className="ranking__fila">
               <span className="ranking__etiqueta">{boton.etiqueta}</span>
               <span className="ranking__barra" aria-hidden="true">
                 <span

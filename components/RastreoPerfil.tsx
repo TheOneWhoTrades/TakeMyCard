@@ -35,11 +35,16 @@ export function RastreoPerfil({ slug }: { slug: string }) {
       }
     }
 
-    const enviar = (tipo: 'vista' | 'clic', linkId?: string) => {
+    const enviar = (
+      tipo: 'vista' | 'clic',
+      linkId?: string,
+      accion: 'link' | 'guardar_contacto' | 'perfil' = tipo === 'vista' ? 'perfil' : 'link',
+    ) => {
       const cuerpo = JSON.stringify({
         slug,
         tipo,
         linkId: linkId ?? null,
+        accion,
         // Sólo en la vista: en el clic el referrer ya es esta misma página.
         referrer: tipo === 'vista' ? dominioReferer() : null,
       })
@@ -68,9 +73,13 @@ export function RastreoPerfil({ slug }: { slug: string }) {
     // se agreguen después. `capture` para que corra aunque el handler del
     // propio elemento detenga la propagación.
     const alHacerClic = (evento: MouseEvent) => {
-      const destino = (evento.target as HTMLElement | null)?.closest?.('[data-link-id]')
+      const destino = (evento.target as HTMLElement | null)?.closest?.(
+        '[data-link-id], [data-evento]',
+      )
       const id = destino?.getAttribute('data-link-id')
+      const accion = destino?.getAttribute('data-evento')
       if (id) enviar('clic', id)
+      else if (accion === 'guardar_contacto') enviar('clic', undefined, 'guardar_contacto')
     }
 
     document.addEventListener('click', alHacerClic, { capture: true })
