@@ -97,7 +97,9 @@ npm run dev
 
 Para crear el proyecto Supabase, aplicar el esquema y darte de alta como admin,
 seguí [`docs/SUPABASE.md`](docs/SUPABASE.md). Para publicar,
-[`docs/DEPLOY.md`](docs/DEPLOY.md).
+[`docs/DEPLOY.md`](docs/DEPLOY.md). Antes de pasar del piloto a cobrar,
+revisá las puertas operativas en
+[`docs/LAUNCH_GATES_ARGENTINA.md`](docs/LAUNCH_GATES_ARGENTINA.md).
 
 ## Scripts
 
