@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Perfil } from '@/components/perfil/Perfil'
+import { DEMO_PUBLICA, esDemoPublica } from '@/lib/demo'
 import { siteUrl } from '@/lib/env'
 import { obtenerPerfilPublico } from '@/lib/perfil'
 import { CAPACIDADES } from '@/lib/types'
@@ -33,11 +34,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Tarjeta no disponible', robots: { index: false } }
   }
 
+  let profile
   if (resultado.estado !== 'activo') {
-    return { title: 'Tarjeta no disponible', robots: { index: false } }
+    if (!esDemoPublica(slug)) {
+      return { title: 'Tarjeta no disponible', robots: { index: false } }
+    }
+    profile = DEMO_PUBLICA.profile
+  } else {
+    profile = resultado.profile
   }
-
-  const { profile } = resultado
   const titulo = profile.profesion ? `${profile.nombre} · ${profile.profesion}` : profile.nombre
   const descripcion = profile.bio ?? `Contacto de ${profile.nombre}.`
 
@@ -74,6 +79,10 @@ export default async function PaginaPerfil({ params }: Props) {
   // Un slug inexistente o pausado sí se cachea, y está bien: la respuesta no va
   // a cambiar en el próximo minuto. El fallo de base no llega hasta acá, lo
   // toma el error.tsx de la ruta.
+  if (resultado.estado !== 'activo' && esDemoPublica(slug)) {
+    return <Perfil {...DEMO_PUBLICA} medir={false} />
+  }
+
   if (resultado.estado !== 'activo') {
     return <PerfilNoDisponible estado={resultado.estado} slug={slug} />
   }

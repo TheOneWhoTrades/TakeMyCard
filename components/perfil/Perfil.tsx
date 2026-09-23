@@ -36,7 +36,12 @@ import { CAPACIDADES } from '@/lib/types'
  * Agregar una quinta variante es agregar un valor al CHECK de la base, una
  * entrada en LAYOUTS y un bloque de CSS. Ese es el costo por diseño nuevo.
  */
-export function Perfil({ profile, links, contacto }: PerfilCompleto) {
+export function Perfil({
+  profile,
+  links,
+  contacto,
+  medir = true,
+}: PerfilCompleto & { medir?: boolean }) {
   const paleta = obtenerPaleta(profile.paleta)
   const capacidades = CAPACIDADES[profile.plan]
 
@@ -57,7 +62,7 @@ export function Perfil({ profile, links, contacto }: PerfilCompleto) {
     // del color del sitio a los costados del color que eligió el cliente.
     <div className="perfil-marco" style={variablesDePaleta(paleta)}>
       <main className={`perfil perfil--${layout}${conPortada ? ' perfil--con-portada' : ''}`}>
-        <RastreoPerfil slug={profile.slug} />
+        {medir && <RastreoPerfil slug={profile.slug} />}
 
         {portada && (
           <div className="perfil__portada">

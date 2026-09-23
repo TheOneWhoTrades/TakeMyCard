@@ -7,6 +7,7 @@
  *   npm run test:vcard
  */
 import { generarVCard } from '@/lib/vcard'
+import { DEMO_PUBLICA } from '@/lib/demo'
 import { hrefDeLink } from '@/lib/links'
 import type { ContactInfo, Link, Profile } from '@/lib/types'
 
@@ -52,6 +53,10 @@ const vcfContacto = generarVCard(profile, links, {
   urlPerfil: 'https://takemycard.vercel.app/dra-lucia-fernandez',
   contacto,
 })
+const vcfDemo = generarVCard(DEMO_PUBLICA.profile, DEMO_PUBLICA.links, {
+  urlPerfil: `https://takemycard.vercel.app/${DEMO_PUBLICA.profile.slug}`,
+  contacto: DEMO_PUBLICA.contacto,
+})
 console.log('\n--- VCF (CRLF shown as \\r\\n) ---')
 console.log(JSON.stringify(vcf).replace(/\\r\\n/g, '\\r\\n\n'))
 // Desplegar (unfold) para poder verificar contenido partido en varias lineas.
@@ -79,6 +84,11 @@ const asserts: [string, boolean][] = [
   ['contact_info: un solo ADR', (vcfContacto.match(/\r\nADR/g) || []).length === 1],
   ['contact_info: red social como URL', vcfContacto.includes('URL;TYPE=LinkedIn:https://linkedin.com/in/lucia')],
   ['contact_info: sigue siendo CRLF', !/[^\r]\n/.test(vcfContacto)],
+
+  // --- ejemplo estático de la CTA comercial ---
+  ['demo: genera una vCard aunque el seed no esté en producción', vcfDemo.includes('FN:Estudio Ejemplo')],
+  ['demo: conserva el contacto ficticio', vcfDemo.includes('EMAIL;TYPE=INTERNET:contacto@ejemplo.com.ar')],
+  ['demo: apunta a la tarjeta de ejemplo', vcfDemo.includes('URL;TYPE=Tarjeta-digital:https://takemycard.vercel.app/estudio-demo')],
 ]
 let fallos = 0
 for (const [n, ok] of asserts) { if(!ok) fallos++; console.log(ok ? 'OK  ' : 'FAIL', n) }

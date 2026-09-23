@@ -1,4 +1,5 @@
 import { siteUrl } from '@/lib/env'
+import { DEMO_PUBLICA, esDemoPublica } from '@/lib/demo'
 import { obtenerPerfilPublico } from '@/lib/perfil'
 import { generarVCard, nombreArchivoVCard } from '@/lib/vcard'
 
@@ -20,6 +21,21 @@ export async function GET(
     return new Response('No se pudo generar el contacto. Probá de nuevo.', {
       status: 503,
       headers: { 'Cache-Control': 'no-store' },
+    })
+  }
+
+  if (resultado.estado !== 'activo' && esDemoPublica(slug)) {
+    const { profile, links, contacto } = DEMO_PUBLICA
+    const vcardDemo = generarVCard(profile, links, {
+      urlPerfil: `${siteUrl()}/${profile.slug}`,
+      contacto,
+    })
+    return new Response(vcardDemo, {
+      headers: {
+        'Content-Type': 'text/vcard; charset=utf-8',
+        'Content-Disposition': `attachment; filename="${nombreArchivoVCard(profile)}"`,
+        'Cache-Control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=300',
+      },
     })
   }
 
