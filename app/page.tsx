@@ -255,8 +255,7 @@ export default function Home() {
           </div>
 
           <p className="seccion__pie">
-            Precios en dólares, se abonan en pesos al cambio del día. Las tarjetas de
-            repuesto se venden aparte. Las condiciones completas están en los{' '}
+            Las tarjetas de repuesto se venden aparte. Las condiciones completas están en los{' '}
             <Link href="/terminos">términos y condiciones</Link>.
             {/* Mientras no haya identificación completa del oferente, publicar
                 precios al público conviene acompañarlo de la etapa real del
@@ -264,7 +263,9 @@ export default function Home() {
             {esPiloto() && (
               <>
                 {' '}
-                Estamos en etapa de prueba: son los precios previstos para el lanzamiento.
+                Estamos en etapa de prueba: los precios son los previstos para el lanzamiento y
+                todavía no se realizan cobros. El medio de pago y la conversión se definirán antes
+                de comercializar el servicio.
               </>
             )}
           </p>
