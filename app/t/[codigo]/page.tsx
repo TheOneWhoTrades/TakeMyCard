@@ -27,17 +27,37 @@ export default async function RedireccionTarjeta({ params }: Props) {
   const { codigo } = await params
 
   let slug: string | null = null
+  let servicioDisponible = true
   try {
-    const { data } = await supabasePublico().rpc('slug_por_codigo', { p_codigo: codigo })
+    const { data, error } = await supabasePublico().rpc('slug_por_codigo', { p_codigo: codigo })
+    if (error) throw error
     slug = typeof data === 'string' ? data : null
   } catch {
-    // La base no contestó. Cae al aviso de abajo, que es mejor que un 500:
-    // quien está leyendo esto acaba de apoyar una tarjeta en el teléfono.
+    // La base no contestó. Es importante no presentarlo como si el chip fuera
+    // inválido: la persona acaba de apoyar una tarjeta que puede estar bien.
+    servicioDisponible = false
   }
 
   // Fuera del try: `redirect` funciona lanzando una excepción, y un catch la
   // atraparía convirtiendo la redirección en el mensaje de error.
   if (slug) redirect(`/${slug}`)
+
+  if (!servicioDisponible) {
+    return (
+      <main className="aviso">
+        <p className="aviso__emoji">⏳</p>
+        <h1 className="aviso__titulo">Esta tarjeta está temporalmente indisponible</h1>
+        <p className="aviso__texto">
+          No pudimos abrirla ahora. Probá de nuevo en unos minutos.
+        </p>
+        <p style={{ marginTop: '2rem' }}>
+          <Link href="/" className="btn">
+            Ir al inicio
+          </Link>
+        </p>
+      </main>
+    )
+  }
 
   return (
     <main className="aviso">

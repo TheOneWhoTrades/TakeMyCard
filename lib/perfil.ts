@@ -43,14 +43,17 @@ export const obtenerPerfilPublico = cache(async (slug: string): Promise<Resultad
   if (error) throw new Error(`No se pudo consultar el perfil "${slug}": ${error.message}`)
 
   if (!profile) {
-    const { data: estado } = await supabase.rpc('estado_slug', { p_slug: slug })
+    const { data: estado, error: errorEstado } = await supabase.rpc('estado_slug', { p_slug: slug })
+    if (errorEstado) {
+      throw new Error(`No se pudo consultar el estado del perfil "${slug}": ${errorEstado.message}`)
+    }
     return { estado: estado === 'inactivo' ? 'inactivo' : 'no_existe' }
   }
 
   // Los dos pedidos que faltan no dependen entre sí: van juntos para no sumar
   // dos viajes en serie a una página que tiene que abrir apenas se apoya la
   // tarjeta en el teléfono.
-  const [{ data: links }, { data: contacto }] = await Promise.all([
+  const [{ data: links, error: errorLinks }, { data: contacto, error: errorContacto }] = await Promise.all([
     supabase
       .from('links')
       .select('*')
@@ -65,6 +68,11 @@ export const obtenerPerfilPublico = cache(async (slug: string): Promise<Resultad
       .eq('profile_id', profile.id)
       .maybeSingle<ContactInfo>(),
   ])
+
+  if (errorLinks) throw new Error(`No se pudieron consultar los links del perfil: ${errorLinks.message}`)
+  if (errorContacto) {
+    throw new Error(`No se pudo consultar el contacto del perfil: ${errorContacto.message}`)
+  }
 
   return { estado: 'activo', profile, links: links ?? [], contacto: contacto ?? null }
 })
