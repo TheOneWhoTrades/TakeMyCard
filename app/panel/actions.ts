@@ -27,8 +27,15 @@ function mensajeError(error: { code?: string; message: string }): string {
   return 'No se pudo guardar. Probá de nuevo.'
 }
 
-/** Sólo aceptamos URLs de nuestro propio bucket de fotos. */
-function fotoValida(url: string | null): string | null {
+/**
+ * Sólo aceptamos URLs del bucket y de la carpeta del perfil que edita.
+ *
+ * El input oculto se completa después de una subida autorizada por Storage,
+ * pero sigue estando en el navegador: validar únicamente el dominio permitiría
+ * que alguien pegara la URL pública de la foto de otro perfil. Cada cliente
+ * sólo puede confirmar imágenes bajo `fotos/<su-profile-id>/`.
+ */
+function fotoValida(url: string | null, profileId: string): string | null {
   if (!url) return null
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL
   if (!base) return null
@@ -40,7 +47,8 @@ function fotoValida(url: string | null): string | null {
     // tocando el HTML. Aceptarlo permitiría usar el perfil para incrustar una
     // imagen remota que registre quién abre la tarjeta.
     if (candidata.hostname !== nuestra.hostname) return null
-    if (!candidata.pathname.startsWith('/storage/v1/object/public/fotos/')) return null
+    const carpetaPropia = `/storage/v1/object/public/fotos/${profileId}/`
+    if (!candidata.pathname.startsWith(carpetaPropia)) return null
     return candidata.toString()
   } catch {
     return null
@@ -65,10 +73,10 @@ export async function guardarPerfil(
     nombre,
     profesion: opcional(formData, 'profesion'),
     bio: opcional(formData, 'bio'),
-    foto_url: fotoValida(opcional(formData, 'foto_url')),
+    foto_url: fotoValida(opcional(formData, 'foto_url'), profile.id),
     // La portada se guarda siempre, aunque el plan no la muestre: así, si el
     // cliente sube de plan, no tiene que volver a cargarla.
-    portada_url: fotoValida(opcional(formData, 'portada_url')),
+    portada_url: fotoValida(opcional(formData, 'portada_url'), profile.id),
     paleta: PALETAS.some((p) => p.id === paleta) ? paleta : profile.paleta,
     // El layout propio es del Premium. Si el formulario trae otra cosa, se
     // ignora: un select editado a mano no compra un plan.
