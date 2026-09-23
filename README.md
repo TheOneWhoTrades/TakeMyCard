@@ -163,6 +163,10 @@ eliminó justamente por eso).
 inmutable —lo protege un trigger— y es lo que se graba. El slug sí puede
 cambiar.
 
+**La entrega física tiene un procedimiento de piloto.** La lista para programar,
+probar y registrar las dos tarjetas, y los límites actuales ante pérdida o
+reposición, está en [`docs/PILOT_NFC_OPERATIONS.md`](docs/PILOT_NFC_OPERATIONS.md).
+
 **La página del profesional no sigue el modo oscuro del sistema.** Es una
 tarjeta: tiene el color que eligió su dueño. Que se viera distinta según la
 configuración del teléfono del otro sería lo contrario de lo que se compra.
