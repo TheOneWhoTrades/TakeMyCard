@@ -77,8 +77,9 @@ autorización positivas y negativas.
 
 Para eventos se conserva únicamente lo necesario para vistas/clics agregados:
 perfil, tipo de evento, link opcional, fecha y, si aporta valor, el host del
-referer normalizado. Quedan fuera IP, user-agent, URLs completas del referer,
-cookies, device IDs y fingerprinting.
+referer normalizado. El navegador normaliza el referer antes de enviarlo y el
+RPC lo valida otra vez antes de persistirlo. Quedan fuera IP, user-agent, URLs
+completas del referer, cookies, device IDs y fingerprinting.
 
 ## Decisiones todavía pendientes
 

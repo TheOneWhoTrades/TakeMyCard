@@ -19,17 +19,29 @@ import { useEffect } from 'react'
  *    cuenta. `sendBeacon` encola el envío fuera del ciclo de vida de la página.
  *
  * No manda ningún dato del visitante: sólo el slug, el tipo de evento, el id
- * del botón y el dominio desde el que llegó. Ver app/api/evento/route.ts.
+ * del botón y el dominio desde el que llegó. La URL completa no cruza ni
+ * siquiera hasta nuestro endpoint. Ver app/api/evento/route.ts.
  */
 export function RastreoPerfil({ slug }: { slug: string }) {
   useEffect(() => {
+    const dominioReferer = () => {
+      if (!document.referrer) return null
+      try {
+        // Una ruta de búsqueda o un enlace interno puede tener datos en la URL.
+        // Sólo el host sirve para la métrica y es lo único que enviamos.
+        return new URL(document.referrer).hostname.toLowerCase() || null
+      } catch {
+        return null
+      }
+    }
+
     const enviar = (tipo: 'vista' | 'clic', linkId?: string) => {
       const cuerpo = JSON.stringify({
         slug,
         tipo,
         linkId: linkId ?? null,
         // Sólo en la vista: en el clic el referrer ya es esta misma página.
-        referrer: tipo === 'vista' ? document.referrer || null : null,
+        referrer: tipo === 'vista' ? dominioReferer() : null,
       })
 
       try {

@@ -17,10 +17,9 @@ import { supabasePublico } from '@/lib/supabase/public'
  * personales del visitante») y es lo que nos permite no pedir consentimiento
  * de cookies ni tratar datos personales de terceros.
  *
- * Del referrer se manda el valor crudo pero la base guarda sólo el dominio:
- * la normalización vive en el RPC `registrar_evento`, que es el único camino de
- * escritura a la tabla, así que vale también si el día de mañana alguien
- * escribe otro cliente.
+ * El navegador ya manda sólo el host del referrer. El RPC vuelve a normalizarlo
+ * y a validarlo: así la tabla conserva ese límite incluso si otro cliente llama
+ * al endpoint de forma directa.
  * ----------------------------------------------------------------------------
  *
  * Se usa POST con `navigator.sendBeacon` desde el navegador: la página del
@@ -57,8 +56,8 @@ export async function POST(request: Request) {
 
   const link = typeof linkId === 'string' && UUID.test(linkId) ? linkId : null
 
-  // Se recorta antes de mandarlo: el RPC se queda sólo con el host, pero no
-  // hace falta que viaje una URL larga hasta la base para que la descarte.
+  // El cliente público manda sólo un host. Se recorta por defensa ante llamadas
+  // directas y el RPC lo valida otra vez antes de persistirlo.
   const origen =
     typeof referrer === 'string' && referrer.length > 0 ? referrer.slice(0, 300) : null
 
