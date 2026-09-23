@@ -42,11 +42,15 @@ el modelo de chip; bloquearlo no evita que alguien copie la URL.
 - Android recomienda NDEF para la mayor compatibilidad y, desde Android 16,
   trata los enlaces web como acciones de abrir enlace; no se debe depender de
   una app propia para el flujo base.
-- iPhone puede leer un URI NDEF en segundo plano, pero la lectura depende del
-  estado del dispositivo y del sistema. La experiencia tiene que probarse con
-  los modelos reales del piloto, no suponerse.
+- Apple documenta la lectura de tags en segundo plano desde iPhone XS. Puede no
+  estar disponible si el equipo todavía no se desbloqueó tras reiniciarse, hay
+  una sesión NFC, Wallet/Apple Pay, cámara o modo avión activos. No se debe
+  prometer compatibilidad automática para iPhone 7/8/X ni para cualquier
+  Android: la experiencia se prueba con los modelos reales del piloto.
 - La lectura del tag puede ocurrir sin red; cargar el perfil web requiere red.
   La comunicación comercial no debe prometer lo contrario.
+
+Fuente primaria: [Apple — Background Tag Reading](https://developer.apple.com/documentation/corenfc/adding-support-for-background-tag-reading).
 
 ## Redirecciones y disponibilidad
 

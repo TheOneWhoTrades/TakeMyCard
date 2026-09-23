@@ -333,7 +333,7 @@ export const PREGUNTAS = [
   },
   {
     p: '¿Funciona en iPhone?',
-    r: 'Sí, desde el iPhone 7 en adelante, sin configurar nada. En Android también, en prácticamente cualquier equipo de los últimos años.',
+    r: 'En iPhone XS y posteriores, la tarjeta se lee sin instalar una app cuando el teléfono está en uso. En Android depende del modelo y de que NFC esté habilitado; por eso probamos cada entrega en ambos sistemas. Si un teléfono no la lee, la dirección impresa permite abrir el perfil a mano.',
   },
   {
     p: '¿Guardan datos de la gente que abre mi tarjeta?',
