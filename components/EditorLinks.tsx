@@ -18,9 +18,9 @@ export type EstadoAccion = { error?: string; ok?: string }
 
 export type AccionesLinks = {
   crear: (estado: EstadoAccion, formData: FormData) => Promise<EstadoAccion>
-  actualizar: (formData: FormData) => Promise<void>
-  eliminar: (formData: FormData) => Promise<void>
-  mover: (formData: FormData) => Promise<void>
+  actualizar: (estado: EstadoAccion, formData: FormData) => Promise<EstadoAccion>
+  eliminar: (estado: EstadoAccion, formData: FormData) => Promise<EstadoAccion>
+  mover: (estado: EstadoAccion, formData: FormData) => Promise<EstadoAccion>
 }
 
 function Enviar({ texto, clase = 'btn' }: { texto: string; clase?: string }) {
@@ -58,10 +58,14 @@ function FilaLink({
   acciones: AccionesLinks
 }) {
   const href = hrefDeLink(link)
+  const [estadoActualizar, actualizar] = useActionState<EstadoAccion, FormData>(acciones.actualizar, {})
+  const [estadoSubir, subir] = useActionState<EstadoAccion, FormData>(acciones.mover, {})
+  const [estadoBajar, bajar] = useActionState<EstadoAccion, FormData>(acciones.mover, {})
+  const [estadoEliminar, eliminar] = useActionState<EstadoAccion, FormData>(acciones.eliminar, {})
 
   return (
     <div className="tarjeta">
-      <form action={acciones.actualizar}>
+      <form action={actualizar}>
         <input type="hidden" name="id" value={link.id} />
         <input type="hidden" name="profile_id" value={profileId} />
 
@@ -104,10 +108,12 @@ function FilaLink({
           </label>
           <Enviar texto="Guardar" clase="btn btn--mini" />
         </div>
+        {estadoActualizar.error && <div className="mensaje mensaje--error">{estadoActualizar.error}</div>}
+        {estadoActualizar.ok && <div className="mensaje mensaje--ok">{estadoActualizar.ok}</div>}
       </form>
 
       <div className="admin__acciones" style={{ marginTop: '0.5rem' }}>
-        <form action={acciones.mover}>
+        <form action={subir}>
           <input type="hidden" name="id" value={link.id} />
           <input type="hidden" name="profile_id" value={profileId} />
           <input type="hidden" name="direccion" value="arriba" />
@@ -115,7 +121,7 @@ function FilaLink({
             ↑
           </button>
         </form>
-        <form action={acciones.mover}>
+        <form action={bajar}>
           <input type="hidden" name="id" value={link.id} />
           <input type="hidden" name="profile_id" value={profileId} />
           <input type="hidden" name="direccion" value="abajo" />
@@ -123,7 +129,7 @@ function FilaLink({
             ↓
           </button>
         </form>
-        <form action={acciones.eliminar}>
+        <form action={eliminar}>
           <input type="hidden" name="id" value={link.id} />
           <input type="hidden" name="profile_id" value={profileId} />
           <button type="submit" className="btn btn--mini btn--peligro">
@@ -131,6 +137,9 @@ function FilaLink({
           </button>
         </form>
       </div>
+      {estadoSubir.error && <div className="mensaje mensaje--error">{estadoSubir.error}</div>}
+      {estadoBajar.error && <div className="mensaje mensaje--error">{estadoBajar.error}</div>}
+      {estadoEliminar.error && <div className="mensaje mensaje--error">{estadoEliminar.error}</div>}
     </div>
   )
 }

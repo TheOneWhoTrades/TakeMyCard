@@ -248,52 +248,72 @@ export async function crearLink(_estado: EstadoAccion, formData: FormData): Prom
   return { ok: 'Link agregado.' }
 }
 
-export async function actualizarLink(formData: FormData) {
+export async function actualizarLink(
+  _estado: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
   const { supabase } = await requerirAdmin()
   const id = texto(formData, 'id')
   const profileId = texto(formData, 'profile_id')
+  const tipo = texto(formData, 'tipo') as LinkTipo
+  const label = texto(formData, 'label')
+  const valor = texto(formData, 'valor')
 
-  await supabase
+  if (!LINK_TIPOS.includes(tipo)) return { error: 'Tipo de link inválido.' }
+  if (!label || !valor) return { error: 'Completá el texto y el dato del botón.' }
+
+  const { error } = await supabase
     .from('links')
     .update({
-      label: texto(formData, 'label'),
-      valor: texto(formData, 'valor'),
-      tipo: texto(formData, 'tipo'),
+      label,
+      valor,
+      tipo,
       activo: formData.get('activo') === 'on',
     })
     .eq('id', id)
 
+  if (error) return { error: mensajeError(error) }
   await revalidarPerfilDeLink(supabase, profileId)
+  return { ok: 'Botón guardado.' }
 }
 
-export async function eliminarLink(formData: FormData) {
+export async function eliminarLink(
+  _estado: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
   const { supabase } = await requerirAdmin()
-  await supabase.from('links').delete().eq('id', texto(formData, 'id'))
-  await revalidarPerfilDeLink(supabase, texto(formData, 'profile_id'))
+  const profileId = texto(formData, 'profile_id')
+  const { error } = await supabase.from('links').delete().eq('id', texto(formData, 'id'))
+  if (error) return { error: mensajeError(error) }
+  await revalidarPerfilDeLink(supabase, profileId)
+  return { ok: 'Botón eliminado.' }
 }
 
 /**
  * Mueve un link una posición arriba o abajo intercambiando el `orden` con su
  * vecino. Es más simple que arrastrar y alcanza para listas de 5-10 botones.
  */
-export async function moverLink(formData: FormData) {
+export async function moverLink(
+  _estado: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
   const { supabase } = await requerirAdmin()
   const id = texto(formData, 'id')
   const profileId = texto(formData, 'profile_id')
   const direccion = texto(formData, 'direccion') === 'arriba' ? -1 : 1
 
-  const { data: links } = await supabase
+  const { data: links, error: errorLectura } = await supabase
     .from('links')
     .select('id, orden')
     .eq('profile_id', profileId)
     .order('orden', { ascending: true })
     .order('created_at', { ascending: true })
 
-  if (!links) return
+  if (errorLectura || !links) return { error: 'No pudimos leer los botones. Probá de nuevo.' }
 
   const indice = links.findIndex((l) => l.id === id)
   const destino = indice + direccion
-  if (indice === -1 || destino < 0 || destino >= links.length) return
+  if (indice === -1 || destino < 0 || destino >= links.length) return {}
 
   // Se reescribe todo el orden en secuencia: así se normaliza aunque los
   // valores hayan quedado duplicados o con huecos por ediciones anteriores.
@@ -301,8 +321,10 @@ export async function moverLink(formData: FormData) {
   ;[reordenados[indice], reordenados[destino]] = [reordenados[destino], reordenados[indice]]
 
   for (const [posicion, link] of reordenados.entries()) {
-    await supabase.from('links').update({ orden: posicion + 1 }).eq('id', link.id)
+    const { error } = await supabase.from('links').update({ orden: posicion + 1 }).eq('id', link.id)
+    if (error) return { error: mensajeError(error) }
   }
 
   await revalidarPerfilDeLink(supabase, profileId)
+  return { ok: 'Orden actualizado.' }
 }

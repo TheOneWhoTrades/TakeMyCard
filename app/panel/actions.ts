@@ -170,15 +170,24 @@ export async function crearLink(
   return { ok: 'Botón agregado.' }
 }
 
-export async function actualizarLink(formData: FormData) {
+export async function actualizarLink(
+  _estado: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
   const { supabase, profile } = await requerirCliente()
+  const tipo = texto(formData, 'tipo') as LinkTipo
+  const label = texto(formData, 'label')
+  const valor = texto(formData, 'valor')
 
-  await supabase
+  if (!LINK_TIPOS.includes(tipo)) return { error: 'Elegí un tipo de botón válido.' }
+  if (!label || !valor) return { error: 'Completá el texto y el dato del botón.' }
+
+  const { error } = await supabase
     .from('links')
     .update({
-      label: texto(formData, 'label'),
-      valor: texto(formData, 'valor'),
-      tipo: texto(formData, 'tipo'),
+      label,
+      valor,
+      tipo,
       activo: formData.get('activo') === 'on',
     })
     .eq('id', texto(formData, 'id'))
@@ -186,47 +195,59 @@ export async function actualizarLink(formData: FormData) {
     // intención escrita en la consulta y no sólo en la base.
     .eq('profile_id', profile.id)
 
+  if (error) return { error: mensajeError(error) }
   await revalidar(profile.slug)
+  return { ok: 'Botón guardado.' }
 }
 
-export async function eliminarLink(formData: FormData) {
+export async function eliminarLink(
+  _estado: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
   const { supabase, profile } = await requerirCliente()
-  await supabase
+  const { error } = await supabase
     .from('links')
     .delete()
     .eq('id', texto(formData, 'id'))
     .eq('profile_id', profile.id)
+  if (error) return { error: mensajeError(error) }
   await revalidar(profile.slug)
+  return { ok: 'Botón eliminado.' }
 }
 
-export async function moverLink(formData: FormData) {
+export async function moverLink(
+  _estado: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
   const { supabase, profile } = await requerirCliente()
   const id = texto(formData, 'id')
   const direccion = texto(formData, 'direccion') === 'arriba' ? -1 : 1
 
-  const { data: links } = await supabase
+  const { data: links, error: errorLectura } = await supabase
     .from('links')
     .select('id, orden')
     .eq('profile_id', profile.id)
     .order('orden', { ascending: true })
     .order('created_at', { ascending: true })
 
-  if (!links) return
+  if (errorLectura || !links) return { error: 'No pudimos leer los botones. Probá de nuevo.' }
 
   const indice = links.findIndex((l) => l.id === id)
   const destino = indice + direccion
-  if (indice === -1 || destino < 0 || destino >= links.length) return
+  if (indice === -1 || destino < 0 || destino >= links.length) return {}
 
   const reordenados = [...links]
   ;[reordenados[indice], reordenados[destino]] = [reordenados[destino], reordenados[indice]]
 
   for (const [posicion, link] of reordenados.entries()) {
-    await supabase
+    const { error } = await supabase
       .from('links')
       .update({ orden: posicion + 1 })
       .eq('id', link.id)
       .eq('profile_id', profile.id)
+    if (error) return { error: mensajeError(error) }
   }
 
   await revalidar(profile.slug)
+  return { ok: 'Orden actualizado.' }
 }
