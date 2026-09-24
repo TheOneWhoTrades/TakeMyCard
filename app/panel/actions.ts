@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { requerirCliente } from '@/lib/auth'
 import { fotoValidaDePerfil, rutaDeFotoPropia } from '@/lib/fotos'
+import { valorDeLinkValido } from '@/lib/links'
 import { LINK_TIPOS, esLayout, type LinkTipo } from '@/lib/types'
 import { PALETAS } from '@/lib/paletas'
 import type { EstadoAccion } from '@/components/EditorLinks'
@@ -133,6 +134,7 @@ export async function crearLink(
   if (!LINK_TIPOS.includes(tipo)) return { error: 'Elegí un tipo de botón válido.' }
   if (!label) return { error: 'Poné un texto para el botón.' }
   if (!valor) return { error: 'Falta el dato del botón (número, usuario o dirección).' }
+  if (!valorDeLinkValido(tipo, valor)) return { error: 'La URL no es válida. Usá una dirección web completa.' }
 
   const { data: ultimo } = await supabase
     .from('links')
@@ -168,6 +170,7 @@ export async function actualizarLink(
 
   if (!LINK_TIPOS.includes(tipo)) return { error: 'Elegí un tipo de botón válido.' }
   if (!label || !valor) return { error: 'Completá el texto y el dato del botón.' }
+  if (!valorDeLinkValido(tipo, valor)) return { error: 'La URL no es válida. Usá una dirección web completa.' }
 
   const { error } = await supabase
     .from('links')

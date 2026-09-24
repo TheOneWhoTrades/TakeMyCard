@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import type { EstadoAccion } from '@/components/EditorLinks'
 import { requerirAdmin } from '@/lib/auth'
 import { fotoValidaDePerfil, rutasDeFotosPropias } from '@/lib/fotos'
+import { valorDeLinkValido } from '@/lib/links'
 import { PALETAS } from '@/lib/paletas'
 import { normalizarSlug } from '@/lib/slug'
 import { esLayout, esPlan, LINK_TIPOS, type LinkTipo } from '@/lib/types'
@@ -283,6 +284,7 @@ export async function crearLink(_estado: EstadoAccion, formData: FormData): Prom
   if (!LINK_TIPOS.includes(tipo)) return { error: 'Tipo de link inválido.' }
   if (!label) return { error: 'Poné un texto para el botón.' }
   if (!valor) return { error: 'Falta el valor del link.' }
+  if (!valorDeLinkValido(tipo, valor)) return { error: 'La URL no es válida. Usá una dirección web completa.' }
 
   // El link nuevo va al final de la lista.
   const { data: ultimo } = await supabase
@@ -321,6 +323,7 @@ export async function actualizarLink(
 
   if (!LINK_TIPOS.includes(tipo)) return { error: 'Tipo de link inválido.' }
   if (!label || !valor) return { error: 'Completá el texto y el dato del botón.' }
+  if (!valorDeLinkValido(tipo, valor)) return { error: 'La URL no es válida. Usá una dirección web completa.' }
 
   const { error } = await supabase
     .from('links')

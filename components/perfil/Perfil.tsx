@@ -114,6 +114,7 @@ export function Perfil({
               const href = hrefDeLink(link)
 
               if (!href) {
+                if (link.tipo !== 'alias_cbu') return null
                 return (
                   <li key={link.id}>
                     <BotonCopiar

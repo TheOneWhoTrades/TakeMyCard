@@ -94,8 +94,10 @@ function FilaLink({
                 <>
                   Abre: <code>{href}</code>
                 </>
-              ) : (
+              ) : link.tipo === 'alias_cbu' ? (
                 'Se muestra con botón de copiar (no es un enlace).'
+              ) : (
+                'El valor guardado no es una URL válida. Corregilo antes de dejarlo visible.'
               )}
             </small>
           </label>
