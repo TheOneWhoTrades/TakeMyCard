@@ -108,33 +108,51 @@ export async function vincularCuenta(
   }
 }
 
-export async function alternarActivo(formData: FormData) {
+export async function alternarActivo(
+  _estado: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
   const { supabase } = await requerirAdmin()
   const id = texto(formData, 'id')
   const activo = texto(formData, 'activo') === 'true'
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('profiles')
     .update({ activo: !activo })
     .eq('id', id)
-    .select('slug')
+    .select('slug, activo')
     .single()
+
+  if (error) return { error: mensajeError(error) }
+  if (!data) return { error: 'No encontramos el perfil para actualizar.' }
 
   revalidatePath('/admin')
   revalidatePath(`/admin/${id}`)
-  if (data?.slug) revalidatePath(`/${data.slug}`)
+  revalidatePath(`/${data.slug}`)
+  return { ok: data.activo ? 'Perfil activado.' : 'Perfil pausado.' }
 }
 
-export async function eliminarPerfil(formData: FormData) {
+export async function eliminarPerfil(
+  _estado: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
   const { supabase } = await requerirAdmin()
   const id = texto(formData, 'id')
 
-  const { data } = await supabase.from('profiles').select('slug').eq('id', id).single()
+  const { data, error: errorLectura } = await supabase
+    .from('profiles')
+    .select('slug')
+    .eq('id', id)
+    .single()
+  if (errorLectura) return { error: mensajeError(errorLectura) }
+  if (!data) return { error: 'No encontramos el perfil para eliminar.' }
+
   // Los links, el contacto, los eventos y las tarjetas caen por ON DELETE CASCADE.
-  await supabase.from('profiles').delete().eq('id', id)
+  const { error } = await supabase.from('profiles').delete().eq('id', id)
+  if (error) return { error: mensajeError(error) }
 
   revalidatePath('/admin')
-  if (data?.slug) revalidatePath(`/${data.slug}`)
+  revalidatePath(`/${data.slug}`)
   redirect('/admin')
 }
 
@@ -195,10 +213,17 @@ export async function registrarTarjeta(
   return { ok: 'Tarjeta registrada.' }
 }
 
-export async function eliminarTarjeta(formData: FormData) {
+export async function eliminarTarjeta(
+  _estado: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
   const { supabase } = await requerirAdmin()
-  await supabase.from('cards').delete().eq('id', texto(formData, 'id'))
-  revalidatePath(`/admin/${texto(formData, 'profile_id')}`)
+  const profileId = texto(formData, 'profile_id')
+  const { error } = await supabase.from('cards').delete().eq('id', texto(formData, 'id'))
+  if (error) return { error: mensajeError(error) }
+
+  revalidatePath(`/admin/${profileId}`)
+  return { ok: 'Registro de tarjeta eliminado.' }
 }
 
 // --- Links -------------------------------------------------------------------

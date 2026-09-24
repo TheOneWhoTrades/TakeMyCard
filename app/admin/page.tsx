@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import { requerirAdmin } from '@/lib/auth'
 import type { Profile } from '@/lib/types'
+import { BotonEstadoPerfil } from './BotonEstadoPerfil'
 import { CuentasPendientes, type CuentaPendiente } from './CuentasPendientes'
-import { alternarActivo } from './actions'
 
 export const dynamic = 'force-dynamic'
 
@@ -75,13 +75,7 @@ export default async function PaginaAdmin() {
                   </span>
                 </td>
                 <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                  <form action={alternarActivo}>
-                    <input type="hidden" name="id" value={p.id} />
-                    <input type="hidden" name="activo" value={String(p.activo)} />
-                    <button type="submit" className="btn btn--mini">
-                      {p.activo ? 'Pausar' : 'Activar'}
-                    </button>
-                  </form>{' '}
+                  <BotonEstadoPerfil id={p.id} activo={p.activo} />{' '}
                   <Link href={`/admin/${p.id}`} className="btn btn--mini">
                     Editar
                   </Link>

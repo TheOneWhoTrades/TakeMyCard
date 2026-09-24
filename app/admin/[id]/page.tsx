@@ -14,13 +14,13 @@ import {
   type Profile,
 } from '@/lib/types'
 import { EditorTarjetas } from '../EditorTarjetas'
+import { EliminarPerfil } from '../EliminarPerfil'
 import { FormularioPerfil } from '../FormularioPerfil'
 import { VincularCuenta } from '../VincularCuenta'
 import {
   actualizarLink,
   crearLink,
   eliminarLink,
-  eliminarPerfil,
   guardarContacto,
   moverLink,
 } from '../actions'
@@ -171,14 +171,7 @@ export default async function PaginaEditarPerfil({
             </>
           )}
         </p>
-        {!tieneTarjetasRegistradas && (
-          <form action={eliminarPerfil}>
-            <input type="hidden" name="id" value={profile.id} />
-            <button type="submit" className="btn btn--peligro">
-              Eliminar perfil
-            </button>
-          </form>
-        )}
+        {!tieneTarjetasRegistradas && <EliminarPerfil profileId={profile.id} />}
       </div>
     </>
   )
