@@ -73,6 +73,9 @@ begin
   select count(*) into n from public.admin_users;
   if n <> 0 then raise exception 'FALLA: anon ve quienes son administradores'; end if;
 
+  select count(*) into n from storage.objects where bucket_id = 'fotos';
+  if n <> 0 then raise exception 'FALLA: anon puede listar las fotos del bucket'; end if;
+
   reset role;
 
   -- === El referrer nunca guarda la URL completa =============================
@@ -114,6 +117,24 @@ begin
   select count(*) into n from public.events where profile_id <> v_premium;
   if n <> 0 then raise exception 'FALLA: un cliente ve la analitica de otro perfil'; end if;
 
+  -- El profesional con autoedición puede administrar sólo su propia carpeta.
+  insert into storage.objects (bucket_id, name)
+    values ('fotos', v_premium::text || '/assert-propia.jpg');
+
+  select count(*) into n from storage.objects
+    where bucket_id = 'fotos' and name = v_premium::text || '/assert-propia.jpg';
+  if n <> 1 then raise exception 'FALLA: un cliente no ve su propia foto'; end if;
+
+  begin
+    insert into storage.objects (bucket_id, name)
+      values ('fotos', v_basico::text || '/assert-ajena.jpg');
+    raise exception 'FALLA: un cliente pudo escribir en la carpeta de otro';
+  exception
+    when insufficient_privilege then null;
+    when others then
+      if sqlerrm like 'FALLA:%' then raise; end if;
+  end;
+
   reset role;
   perform set_config('request.jwt.claim.sub','', true);
 
@@ -126,6 +147,16 @@ begin
 
   select count(*) into n from public.events where profile_id = v_basico;
   if n <> 0 then raise exception 'FALLA: un plan basico pudo leer sus metricas'; end if;
+
+  begin
+    insert into storage.objects (bucket_id, name)
+      values ('fotos', v_basico::text || '/assert-basico.jpg');
+    raise exception 'FALLA: un plan basico pudo subir una foto';
+  exception
+    when insufficient_privilege then null;
+    when others then
+      if sqlerrm like 'FALLA:%' then raise; end if;
+  end;
 
   reset role;
   perform set_config('request.jwt.claim.sub','', true);
