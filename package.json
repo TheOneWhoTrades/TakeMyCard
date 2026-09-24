@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:vcard": "esbuild scripts/test-vcard.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/test-vcard.mjs --alias:@=. && node node_modules/.cache/test-vcard.mjs",
+    "test:fotos": "esbuild scripts/test-fotos.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/test-fotos.mjs --alias:@=. && node node_modules/.cache/test-fotos.mjs",
     "test:db": "bash scripts/test-db.sh"
   },
   "dependencies": {

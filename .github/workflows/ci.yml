@@ -32,6 +32,9 @@ jobs:
       - name: Formato del vCard
         run: npm run test:vcard
 
+      - name: Aislamiento de fotos de perfil
+        run: npm run test:fotos
+
       - name: Políticas de RLS
         # El script levanta un Postgres efímero: no toca el proyecto Supabase
         # real, así que no hacen falta credenciales.
