@@ -35,3 +35,16 @@ export function rutaDeFotoPropia(url: string | null, profileId: string): string 
   const carpeta = `/storage/v1/object/public/fotos/${profileId}/`
   return new URL(valida).pathname.slice(carpeta.length) || null
 }
+
+/**
+ * Defensa para las filas históricas: aunque una URL externa hubiera quedado
+ * guardada antes de esta regla, nunca se entrega a quien abre la tarjeta.
+ */
+export function perfilConFotosSeguras(profile: Profile): Profile {
+  return {
+    ...profile,
+    foto_url: fotoValidaDePerfil(profile.foto_url, profile.id),
+    portada_url: fotoValidaDePerfil(profile.portada_url, profile.id),
+  }
+}
+import type { Profile } from '@/lib/types'

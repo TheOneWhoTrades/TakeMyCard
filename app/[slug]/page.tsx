@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Perfil } from '@/components/perfil/Perfil'
 import { DEMO_PUBLICA, esDemoPublica } from '@/lib/demo'
 import { siteUrl } from '@/lib/env'
+import { perfilConFotosSeguras } from '@/lib/fotos'
 import { obtenerPerfilPublico } from '@/lib/perfil'
 import { CAPACIDADES } from '@/lib/types'
 import { PerfilNoDisponible } from './no-disponible'
@@ -41,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
     profile = DEMO_PUBLICA.profile
   } else {
-    profile = resultado.profile
+    profile = perfilConFotosSeguras(resultado.profile)
   }
   const titulo = profile.profesion ? `${profile.nombre} · ${profile.profesion}` : profile.nombre
   const descripcion = profile.bio ?? `Contacto de ${profile.nombre}.`
@@ -90,9 +91,11 @@ export default async function PaginaPerfil({ params }: Props) {
   // La visita se cuenta desde el navegador (ver components/RastreoPerfil.tsx).
   // Contarla acá daba una cota inferior: esta página está cacheada, así que el
   // render ocurre una vez por regeneración, no una por visita.
+  const profile = perfilConFotosSeguras(resultado.profile)
+
   return (
     <Perfil
-      profile={resultado.profile}
+      profile={profile}
       links={resultado.links}
       contacto={resultado.contacto}
     />
