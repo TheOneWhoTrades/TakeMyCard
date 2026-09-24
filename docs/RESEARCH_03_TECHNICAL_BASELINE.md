@@ -92,7 +92,9 @@ completas del referer, cookies, device IDs y fingerprinting.
   tarjeta; además de reposiciones, pérdidas y reasignaciones.
 - Dominio definitivo y estrategia de continuidad/renovación.
 - Política de retención de eventos agregados y rate limiting del endpoint de
-  analítica.
+  analítica. El endpoint ya rechaza cuerpos de más de 4 KB para no procesar
+  cargas arbitrariamente grandes; eso es una defensa de recursos, no sustituye
+  una política de rate limiting.
 - Qué significa `agenda`: hoy puede seguir siendo un link de contacto; no se
   asume una integración ni un sistema de turnos.
 - QR, Wallet, CRM, lead capture e IA siguen fuera del alcance confirmado.
