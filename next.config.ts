@@ -1,8 +1,8 @@
 import type { NextConfig } from 'next'
 
-const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
-  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
-  : undefined
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseHost = supabaseUrl ? new URL(supabaseUrl).hostname : undefined
+const supabaseOrigin = supabaseUrl ? new URL(supabaseUrl).origin : undefined
 
 const nextConfig: NextConfig = {
   async headers() {
@@ -16,11 +16,11 @@ const nextConfig: NextConfig = {
       "object-src 'none'",
       "frame-ancestors 'none'",
       "form-action 'self'",
-      "img-src 'self' data: blob: https://*.supabase.co",
+      ["img-src 'self' data: blob:", supabaseOrigin].filter(Boolean).join(' '),
       "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self'",
-      "connect-src 'self' https://*.supabase.co",
+      ["connect-src 'self'", supabaseOrigin].filter(Boolean).join(' '),
       'upgrade-insecure-requests',
     ].join('; ')
 
