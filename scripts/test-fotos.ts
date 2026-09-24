@@ -7,7 +7,12 @@
  *
  *   npm run test:fotos
  */
-import { fotoValidaDePerfil, perfilConFotosSeguras, rutaDeFotoPropia } from '@/lib/fotos'
+import {
+  fotoValidaDePerfil,
+  perfilConFotosSeguras,
+  rutaDeFotoPropia,
+  rutasDeFotosPropias,
+} from '@/lib/fotos'
 import type { Profile } from '@/lib/types'
 
 const base = 'https://proyecto-prueba.supabase.co'
@@ -53,6 +58,11 @@ const asserts: [string, boolean][] = [
   ],
   ['obtiene una ruta segura para borrar', rutaDeFotoPropia(propia, perfilId) === 'perfil-123.jpg'],
   ['nunca obtiene ruta para borrar una foto ajena', rutaDeFotoPropia(`${base}/storage/v1/object/public/fotos/${otroId}/ajena.jpg`, perfilId) === null],
+  [
+    'al borrar, conserva sólo rutas propias y sin duplicados',
+    JSON.stringify(rutasDeFotosPropias([propia, propia, `${base}/storage/v1/object/public/fotos/${otroId}/ajena.jpg`], perfilId)) ===
+      JSON.stringify(['perfil-123.jpg']),
+  ],
   ['conserva foto propia al mostrar la tarjeta', saneado.foto_url === propia],
   ['oculta foto histórica externa al mostrar la tarjeta', saneado.portada_url === null],
 ]

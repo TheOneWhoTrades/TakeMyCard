@@ -270,8 +270,8 @@ La migración crea el bucket público `fotos`. Las imágenes se guardan en
 `fotos/<profile_id>/<archivo>.jpg`, y esa ruta es lo que ata el archivo al
 perfil en la política: un cliente escribe en su carpeta y en ninguna otra.
 
-Suben desde el panel, ya recortadas en el navegador. Se guarda la URL completa y
-no la ruta del objeto para que `foto_url` acepte también imágenes alojadas en
-otro lado, aunque el panel del cliente sólo acepta las del bucket propio —una
-imagen remota en el perfil sería una forma de registrar quién abre la tarjeta
-desde afuera de nuestro control.
+Suben desde el panel, ya recortadas en el navegador. Se guarda la URL pública
+completa, pero sólo se aceptan URLs del bucket propio y de la carpeta del
+perfil. Así una imagen remota no puede registrar quién abre la tarjeta desde
+afuera de nuestro control. Al reemplazar o borrar un perfil, la aplicación
+retira sus objetos propios del bucket para no dejar fotos públicas huérfanas.

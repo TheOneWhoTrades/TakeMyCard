@@ -112,6 +112,8 @@ revisá las puertas operativas en
 | `npm run typecheck` | TypeScript sin emitir |
 | `npm run test:db` | Levanta un Postgres efímero, aplica las migraciones y verifica las políticas de RLS |
 | `npm run test:vcard` | Verifica el formato del `.vcf` generado |
+| `npm run test:fotos` | Verifica que las fotos se aíslen por perfil y origen |
+| `npm run test:evento` | Verifica el límite de tamaño del beacon de analítica |
 
 ## Estructura
 

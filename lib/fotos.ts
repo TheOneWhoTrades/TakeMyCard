@@ -37,6 +37,23 @@ export function rutaDeFotoPropia(url: string | null, profileId: string): string 
 }
 
 /**
+ * Convierte URLs de fotos de un perfil en rutas seguras para `storage.remove()`.
+ * Ignora valores externos o ajenos y evita pedir dos veces el mismo objeto.
+ */
+export function rutasDeFotosPropias(
+  urls: Array<string | null | undefined>,
+  profileId: string,
+): string[] {
+  return [
+    ...new Set(
+      urls
+        .map((url) => rutaDeFotoPropia(url ?? null, profileId))
+        .filter((ruta): ruta is string => Boolean(ruta)),
+    ),
+  ]
+}
+
+/**
  * Defensa para las filas históricas: aunque una URL externa hubiera quedado
  * guardada antes de esta regla, nunca se entrega a quien abre la tarjeta.
  */

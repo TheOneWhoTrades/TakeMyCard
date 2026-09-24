@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import type { EstadoAccion } from '@/components/EditorLinks'
 import { requerirAdmin } from '@/lib/auth'
-import { fotoValidaDePerfil, rutaDeFotoPropia } from '@/lib/fotos'
+import { fotoValidaDePerfil, rutasDeFotosPropias } from '@/lib/fotos'
 import { PALETAS } from '@/lib/paletas'
 import { normalizarSlug } from '@/lib/slug'
 import { esLayout, esPlan, LINK_TIPOS, type LinkTipo } from '@/lib/types'
@@ -91,10 +91,10 @@ export async function actualizarPerfil(
   if (error) return { error: mensajeError(error) }
 
   const fotosEnUso = new Set([fotoUrl, portadaUrl].filter(Boolean))
-  const rutasAnteriores = [...new Set([previo.foto_url, previo.portada_url])]
-    .filter((url): url is string => Boolean(url) && !fotosEnUso.has(url))
-    .map((url) => rutaDeFotoPropia(url, id))
-    .filter((ruta): ruta is string => Boolean(ruta))
+  const rutasAnteriores = rutasDeFotosPropias(
+    [previo.foto_url, previo.portada_url].filter((url) => Boolean(url) && !fotosEnUso.has(url)),
+    id,
+  )
   if (rutasAnteriores.length) await supabase.storage.from('fotos').remove(rutasAnteriores)
 
   revalidatePath('/admin')
@@ -165,11 +165,22 @@ export async function eliminarPerfil(
 
   const { data, error: errorLectura } = await supabase
     .from('profiles')
-    .select('slug')
+    .select('slug, foto_url, portada_url')
     .eq('id', id)
     .single()
   if (errorLectura) return { error: mensajeError(errorLectura) }
   if (!data) return { error: 'No encontramos el perfil para eliminar.' }
+
+  // Storage no participa del ON DELETE CASCADE de Postgres. Si no quitamos
+  // estos objetos antes, una foto de un alta descartada seguiría teniendo una
+  // URL pública aun cuando ya no exista su perfil.
+  const rutasFotos = rutasDeFotosPropias([data.foto_url, data.portada_url], id)
+  if (rutasFotos.length) {
+    const { error: errorFotos } = await supabase.storage.from('fotos').remove(rutasFotos)
+    if (errorFotos) {
+      return { error: 'No pudimos retirar las fotos del perfil. El perfil quedó sin cambios; probá de nuevo.' }
+    }
+  }
 
   // Los links, el contacto, los eventos y las tarjetas caen por ON DELETE CASCADE.
   const { error } = await supabase.from('profiles').delete().eq('id', id)
