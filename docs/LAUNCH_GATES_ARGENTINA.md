@@ -31,7 +31,7 @@ El software ya aplica estas decisiones de producto:
 | Precio y cobro | Precio final y conversión USD/ARS definidos antes de cada contratación; medio de pago y autorización de recurrencia acordados. | Titular + contador |
 | Impago y baja | Plazos de aviso, gracia, suspensión, reactivación y baja documentados; el mismo canal de alta permite solicitar la baja. | Titular + asesor legal |
 | Garantías y reposiciones | Precio de reposición, cobertura por defecto de fabricación, error de impresión y pérdida/deterioro definidos y facturables. | Titular + asesor legal |
-| Datos personales | Textos legales revisados con la identidad real del responsable y proveedores; proceso para acceso, rectificación y supresión operativo. | Asesor legal |
+| Datos personales | Textos legales revisados con la identidad real del responsable y proveedores; proceso para acceso, rectificación y supresión operativo. El alta registra la versión de términos y privacidad aceptada; revisar su validez con asesoramiento legal. | Asesor legal |
 | Dominio y NFC | Dominio controlado por el proyecto, `NEXT_PUBLIC_SITE_URL` configurada, callback de autenticación probado y lectura real en iPhone/Android antes de imprimir. | Titular + operación |
 | Continuidad | Backups, acceso a cuentas de hosting/base, renovaciones de dominio y contacto ante incidentes documentados y verificados. Ver [procedimiento de continuidad e incidentes](CONTINUIDAD_E_INCIDENTES.md). | Titular + operación |
 

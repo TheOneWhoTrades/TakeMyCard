@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
+import { LEGAL } from '@/lib/marca'
 import { crearCuenta, type EstadoAlta } from './actions'
 
 function Boton() {
@@ -54,12 +55,16 @@ export function FormularioAlta() {
         <input type="password" name="password2" autoComplete="new-password" required />
       </label>
 
-      <Boton />
+      <label className="campo--check" style={{ alignItems: 'flex-start' }}>
+        <input type="checkbox" name="acepta_documentos" required />
+        <span>
+          Leí y acepto los <Link href="/terminos">términos y condiciones</Link> y la{' '}
+          <Link href="/privacidad">política de privacidad</Link> vigentes desde{' '}
+          {LEGAL.vigenteDesde}.
+        </span>
+      </label>
 
-      <p className="login__pie">
-        Al crear la cuenta aceptás los <Link href="/terminos">términos y condiciones</Link> y
-        la <Link href="/privacidad">política de privacidad</Link>.
-      </p>
+      <Boton />
     </form>
   )
 }

@@ -3,6 +3,7 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { siteUrl } from '@/lib/env'
+import { LEGAL } from '@/lib/marca'
 import { supabaseServer } from '@/lib/supabase/server'
 
 export type EstadoAlta = { error?: string; confirmar?: boolean }
@@ -29,8 +30,12 @@ export async function crearCuenta(_estado: EstadoAlta, formData: FormData): Prom
   const email = String(formData.get('email') ?? '').trim().toLowerCase()
   const password = String(formData.get('password') ?? '')
   const repetida = String(formData.get('password2') ?? '')
+  const aceptaDocumentos = formData.get('acepta_documentos') === 'on'
 
   if (!email || !email.includes('@')) return { error: 'Escribí un email válido.' }
+  if (!aceptaDocumentos) {
+    return { error: 'Para crear una cuenta tenés que aceptar los términos y la política de privacidad.' }
+  }
   if (password.length < MINIMO_CLAVE) {
     return { error: `La contraseña tiene que tener al menos ${MINIMO_CLAVE} caracteres.` }
   }
@@ -44,7 +49,17 @@ export async function crearCuenta(_estado: EstadoAlta, formData: FormData): Prom
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo: `${base}/auth/callback?next=/panel` },
+    options: {
+      emailRedirectTo: `${base}/auth/callback?next=/panel`,
+      // Deja constancia de qué textos públicos aceptó al darse de alta. Es una
+      // traza operativa del alta, no una sustitución de la revisión legal que
+      // sigue siendo necesaria antes de empezar a cobrar.
+      data: {
+        terminos_version: LEGAL.vigenteDesde,
+        privacidad_version: LEGAL.vigenteDesde,
+        documentos_aceptados_el: new Date().toISOString(),
+      },
+    },
   })
 
   if (error) {
