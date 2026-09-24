@@ -26,8 +26,8 @@ recuperar las tarjetas ya entregadas.
 
 1. Crear y completar el perfil en `/admin`; verificar nombre, datos de contacto
    y links desde un teléfono.
-2. Copiar la URL que aparece en *Qué grabar en el chip*. No escribir una URL a
-   mano ni usar el slug.
+2. Usar el botón *Copiar URL para el chip* que aparece en *Qué grabar en el
+   chip*. No escribir una URL a mano ni usar el slug.
 3. Programar cada tarjeta con un único registro NDEF de tipo URI/HTTPS usando
    esa URL. No incluir datos de contacto, URLs de terceros ni información de
    login dentro del chip.

@@ -14,6 +14,7 @@ import {
   type Profile,
 } from '@/lib/types'
 import { EditorTarjetas } from '../EditorTarjetas'
+import { CopiarUrlChip } from '../CopiarUrlChip'
 import { EliminarPerfil } from '../EliminarPerfil'
 import { FormularioPerfil } from '../FormularioPerfil'
 import { VincularCuenta } from '../VincularCuenta'
@@ -72,6 +73,7 @@ export default async function PaginaEditarPerfil({
     ])
 
   const tieneTarjetasRegistradas = (cards?.length ?? 0) > 0
+  const urlChip = `${siteUrl()}/t/${profile.codigo_corto}`
 
   return (
     <>
@@ -105,9 +107,8 @@ export default async function PaginaEditarPerfil({
           tarjeta, que es cuando se abre esta pantalla. */}
       <div className="tarjeta">
         <h3>Qué grabar en el chip</h3>
-        <p className="codigo-chip">
-          {siteUrl()}/t/{profile.codigo_corto}
-        </p>
+        <p className="codigo-chip">{urlChip}</p>
+        <CopiarUrlChip url={urlChip} />
         <p className="vacio" style={{ padding: 0 }}>
           No grabes <code>/{profile.slug}</code> directo: el código corto es lo que nos
           deja cambiar de dominio o de slug sin romper las tarjetas ya entregadas.
