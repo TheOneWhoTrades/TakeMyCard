@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import type { EstadoAccion } from '@/components/EditorLinks'
 import { requerirAdmin } from '@/lib/auth'
+import { fotoValidaDePerfil, rutaDeFotoPropia } from '@/lib/fotos'
 import { PALETAS } from '@/lib/paletas'
 import { normalizarSlug } from '@/lib/slug'
 import { esLayout, esPlan, LINK_TIPOS, type LinkTipo } from '@/lib/types'
@@ -68,15 +69,38 @@ export async function actualizarPerfil(
   if (!datos.nombre) return { error: 'El nombre es obligatorio.' }
   if (!datos.slug) return { error: 'El slug es obligatorio.' }
 
-  const { data: previo } = await supabase.from('profiles').select('slug').eq('id', id).single()
+  const { data: previo, error: errorLectura } = await supabase
+    .from('profiles')
+    .select('slug, foto_url, portada_url')
+    .eq('id', id)
+    .single()
+  if (errorLectura || !previo) return { error: 'No encontramos el perfil para actualizar.' }
 
-  const { error } = await supabase.from('profiles').update(datos).eq('id', id)
+  // El administrador también usa inputs ocultos para las fotos. Darle más
+  // permisos no convierte esos campos en confiables: una URL externa podría
+  // rastrear a cada visitante de la tarjeta pública.
+  const fotoUrl = fotoValidaDePerfil(datos.foto_url, id)
+  const portadaUrl = fotoValidaDePerfil(datos.portada_url, id)
+  if ((datos.foto_url && !fotoUrl) || (datos.portada_url && !portadaUrl)) {
+    return { error: 'Elegí una foto cargada en este perfil. No se aceptan URLs externas ni de otra carpeta.' }
+  }
+
+  const datosSeguros = { ...datos, foto_url: fotoUrl, portada_url: portadaUrl }
+
+  const { error } = await supabase.from('profiles').update(datosSeguros).eq('id', id)
   if (error) return { error: mensajeError(error) }
+
+  const fotosEnUso = new Set([fotoUrl, portadaUrl].filter(Boolean))
+  const rutasAnteriores = [...new Set([previo.foto_url, previo.portada_url])]
+    .filter((url): url is string => Boolean(url) && !fotosEnUso.has(url))
+    .map((url) => rutaDeFotoPropia(url, id))
+    .filter((ruta): ruta is string => Boolean(ruta))
+  if (rutasAnteriores.length) await supabase.storage.from('fotos').remove(rutasAnteriores)
 
   revalidatePath('/admin')
   revalidatePath(`/admin/${id}`)
-  revalidatePath(`/${datos.slug}`)
-  if (previo?.slug && previo.slug !== datos.slug) revalidatePath(`/${previo.slug}`)
+  revalidatePath(`/${datosSeguros.slug}`)
+  if (previo.slug !== datosSeguros.slug) revalidatePath(`/${previo.slug}`)
 
   return { ok: 'Perfil guardado.' }
 }

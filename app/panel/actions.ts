@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { requerirCliente } from '@/lib/auth'
+import { fotoValidaDePerfil, rutaDeFotoPropia } from '@/lib/fotos'
 import { LINK_TIPOS, esLayout, type LinkTipo } from '@/lib/types'
 import { PALETAS } from '@/lib/paletas'
 import type { EstadoAccion } from '@/components/EditorLinks'
@@ -27,47 +28,6 @@ function mensajeError(error: { code?: string; message: string }): string {
   return 'No se pudo guardar. Probá de nuevo.'
 }
 
-/**
- * Sólo aceptamos URLs del bucket y de la carpeta del perfil que edita.
- *
- * El input oculto se completa después de una subida autorizada por Storage,
- * pero sigue estando en el navegador: validar únicamente el dominio permitiría
- * que alguien pegara la URL pública de la foto de otro perfil. Cada cliente
- * sólo puede confirmar imágenes bajo `fotos/<su-profile-id>/`.
- */
-function fotoValida(url: string | null, profileId: string): string | null {
-  if (!url) return null
-  const base = process.env.NEXT_PUBLIC_SUPABASE_URL
-  if (!base) return null
-  try {
-    const candidata = new URL(url)
-    const nuestra = new URL(base)
-    // Si no es del bucket, se descarta en silencio: el campo lo llena el
-    // componente de subida, así que un valor ajeno sólo puede venir de alguien
-    // tocando el HTML. Aceptarlo permitiría usar el perfil para incrustar una
-    // imagen remota que registre quién abre la tarjeta.
-    if (candidata.origin !== nuestra.origin) return null
-    const carpetaPropia = `/storage/v1/object/public/fotos/${profileId}/`
-    if (!candidata.pathname.startsWith(carpetaPropia)) return null
-    return candidata.toString()
-  } catch {
-    return null
-  }
-}
-
-/**
- * Devuelve la ruta interna de una foto propia, apta para `storage.remove()`.
- * Primero pasa por la misma validación que protege el guardado: una URL
- * manipulada en el formulario nunca puede borrar archivos ajenos.
- */
-function rutaDeFotoPropia(url: string | null, profileId: string): string | null {
-  const valida = fotoValida(url, profileId)
-  if (!valida) return null
-
-  const carpeta = `/storage/v1/object/public/fotos/${profileId}/`
-  return new URL(valida).pathname.slice(carpeta.length) || null
-}
-
 // --- Perfil ------------------------------------------------------------------
 
 export async function guardarPerfil(
@@ -86,10 +46,10 @@ export async function guardarPerfil(
     nombre,
     profesion: opcional(formData, 'profesion'),
     bio: opcional(formData, 'bio'),
-    foto_url: fotoValida(opcional(formData, 'foto_url'), profile.id),
+    foto_url: fotoValidaDePerfil(opcional(formData, 'foto_url'), profile.id),
     // La portada se guarda siempre, aunque el plan no la muestre: así, si el
     // cliente sube de plan, no tiene que volver a cargarla.
-    portada_url: fotoValida(opcional(formData, 'portada_url'), profile.id),
+    portada_url: fotoValidaDePerfil(opcional(formData, 'portada_url'), profile.id),
     paleta: PALETAS.some((p) => p.id === paleta) ? paleta : profile.paleta,
     // El layout propio es del Premium. Si el formulario trae otra cosa, se
     // ignora: un select editado a mano no compra un plan.
