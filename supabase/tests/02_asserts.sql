@@ -45,6 +45,16 @@ declare
   n int;
   t text;
 begin
+  -- === El bucket público sólo recibe las fotos que genera el editor =========
+  if (select file_size_limit from storage.buckets where id = 'fotos') <> 2097152 then
+    raise exception 'FALLA: el bucket fotos no tiene el límite de 2 MiB';
+  end if;
+
+  if (select allowed_mime_types from storage.buckets where id = 'fotos')
+     is distinct from array['image/jpeg']::text[] then
+    raise exception 'FALLA: el bucket fotos acepta formatos no previstos';
+  end if;
+
   -- === El visitante anónimo =================================================
   set local role anon;
 
