@@ -46,13 +46,26 @@ function fotoValida(url: string | null, profileId: string): string | null {
     // componente de subida, así que un valor ajeno sólo puede venir de alguien
     // tocando el HTML. Aceptarlo permitiría usar el perfil para incrustar una
     // imagen remota que registre quién abre la tarjeta.
-    if (candidata.hostname !== nuestra.hostname) return null
+    if (candidata.origin !== nuestra.origin) return null
     const carpetaPropia = `/storage/v1/object/public/fotos/${profileId}/`
     if (!candidata.pathname.startsWith(carpetaPropia)) return null
     return candidata.toString()
   } catch {
     return null
   }
+}
+
+/**
+ * Devuelve la ruta interna de una foto propia, apta para `storage.remove()`.
+ * Primero pasa por la misma validación que protege el guardado: una URL
+ * manipulada en el formulario nunca puede borrar archivos ajenos.
+ */
+function rutaDeFotoPropia(url: string | null, profileId: string): string | null {
+  const valida = fotoValida(url, profileId)
+  if (!valida) return null
+
+  const carpeta = `/storage/v1/object/public/fotos/${profileId}/`
+  return new URL(valida).pathname.slice(carpeta.length) || null
 }
 
 // --- Perfil ------------------------------------------------------------------
@@ -86,6 +99,20 @@ export async function guardarPerfil(
 
   const { error } = await supabase.from('profiles').update(datos).eq('id', profile.id)
   if (error) return { error: mensajeError(error) }
+
+  // Recién ahora se pueden borrar las versiones reemplazadas. Hacerlo cuando
+  // se toca “Quitar” rompería la página pública si después se cancela el
+  // formulario. Si Storage no responde, el perfil nuevo sigue siendo válido:
+  // queda un archivo huérfano, pero nunca una foto rota.
+  const fotosEnUso = new Set([datos.foto_url, datos.portada_url].filter(Boolean))
+  const rutasAnteriores = [...new Set([profile.foto_url, profile.portada_url])]
+    .filter((url): url is string => Boolean(url) && !fotosEnUso.has(url))
+    .map((url) => rutaDeFotoPropia(url, profile.id))
+    .filter((ruta): ruta is string => Boolean(ruta))
+
+  if (rutasAnteriores.length) {
+    await supabase.storage.from('fotos').remove(rutasAnteriores)
+  }
 
   revalidatePath('/panel')
   revalidatePath(`/${profile.slug}`)
