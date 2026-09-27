@@ -117,8 +117,40 @@ export default function Home() {
 
           <div className="columnas">
             {PASOS.map((paso, i) => (
-              <article className="columna" key={paso.titulo}>
+              <article className={`columna mundo__paso mundo__paso--${i + 1}`} key={paso.titulo}>
                 <span className="columna__numero">{i + 1}</span>
+                <div className={`mundo__escena mundo__escena--${i + 1}`} aria-hidden="true">
+                  <div className="mundo__isla">
+                    {i === 0 && (
+                      <>
+                        <span className="mundo__sello">TMC</span>
+                        <span className="mundo__tarjeta" />
+                        <span className="mundo__dato mundo__dato--uno" />
+                        <span className="mundo__dato mundo__dato--dos" />
+                      </>
+                    )}
+                    {i === 1 && (
+                      <>
+                        <span className="mundo__telefono">
+                          <span className="mundo__pantalla" />
+                        </span>
+                        <span className="mundo__ondas" />
+                        <span className="mundo__tarjeta mundo__tarjeta--chica" />
+                      </>
+                    )}
+                    {i === 2 && (
+                      <>
+                        <span className="mundo__perfil">
+                          <span className="mundo__avatar" />
+                          <span className="mundo__linea mundo__linea--larga" />
+                          <span className="mundo__linea" />
+                          <span className="mundo__boton" />
+                        </span>
+                        <span className="mundo__destello">✦</span>
+                      </>
+                    )}
+                  </div>
+                </div>
                 <h3 className="columna__titulo">{paso.titulo}</h3>
                 <p>{paso.texto}</p>
               </article>
