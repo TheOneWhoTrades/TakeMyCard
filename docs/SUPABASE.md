@@ -10,9 +10,26 @@ guarda `tudominio.com/t/<codigo_corto>` y lo que cambia es la fila.
    recorta unos 100 ms por consulta frente a las de EE.UU.
 
 2. **Aplicar el esquema.** En el Dashboard → *SQL Editor* → *New query*, pegar
-   y ejecutar **en orden** los archivos de
-   [`supabase/migrations/`](../supabase/migrations/). Son idempotentes: se
-   pueden volver a correr sin romper nada.
+   **el contenido** de cada archivo de
+   [`supabase/migrations/`](../supabase/migrations/) y ejecutarlos **en orden**.
+   (El nombre del archivo no: el editor ejecuta SQL, no abre archivos. Pegar
+   `20260915120000_init.sql` devuelve `trailing junk after numeric literal`.)
+
+   Cada migración es idempotente **por separado**: volver a correr la misma no
+   rompe nada. Lo que no se puede es volver a correr la tanda entera sobre una
+   base que ya tenga aplicada la segunda migración o una posterior — la primera
+   crea una política sobre `auto_edicion_habilitada` y la segunda elimina esa
+   columna, así que la primera falla con `column auto_edicion_habilitada does
+   not exist`. Ante la duda, esta consulta dice en qué estado está la base:
+
+   ```sql
+   select to_regclass('public.profiles')            as tiene_profiles,
+          to_regclass('public.events')              as tiene_events,
+          to_regclass('public.cards')               as tiene_cards,
+          to_regproc('public.cuentas_sin_perfil')   as tiene_cuentas_pendientes;
+   ```
+
+   Todo en `NULL` = base limpia, se corren todas desde la primera.
 
    Con la CLI de Supabase, alternativamente:
 
