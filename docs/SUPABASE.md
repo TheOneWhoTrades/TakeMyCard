@@ -125,6 +125,57 @@ guarda `tudominio.com/t/<codigo_corto>` y lo que cambia es la fila.
      saltean RLS, y todo lo que empieza con `NEXT_PUBLIC_` se manda al navegador
      de cada visitante. Este proyecto no necesita ninguna de las dos.
 
+7. **Configurar el envío de emails (SMTP propio).** El servidor que trae
+   Supabase existe para probar, no para operar: está limitado a unos pocos
+   mensajes por hora, comparte reputación con todos los proyectos gratuitos de
+   Supabase y **Supabase no garantiza la entrega**. Con dos clientes dándose de
+   alta la misma tarde ya se corta, y el cliente al que no le llegó el mail de
+   confirmación no tiene forma de darse cuenta de por qué.
+
+   El servicio elegido es **Resend**. Los valores van en
+   *Project Settings → Authentication → SMTP Settings* → *Enable Custom SMTP*:
+
+   | Campo | Valor |
+   |---|---|
+   | Host | `smtp.resend.com` |
+   | Port | `465` |
+   | Username | `resend` (literal, no es tu email) |
+   | Password | la API key de Resend (`re_…`) |
+   | Sender email | `no-responder@<tu-dominio>` |
+   | Sender name | `TakeMyCard` |
+
+   Los pasos del lado de Resend: crear la cuenta, *Domains → Add Domain*,
+   cargar en el DNS del dominio los registros que Resend indique (un TXT de
+   verificación, los de DKIM y el de SPF), esperar a que el panel marque el
+   dominio como *Verified*, y recién entonces *API Keys → Create API Key* con
+   permiso de envío. Esa key es la contraseña del SMTP: se pega en Supabase y
+   no se guarda en el repositorio.
+
+   **Esto necesita un dominio propio y todavía no hay uno comprado.** Resend
+   --como cualquier servicio serio de envío-- sólo deja mandar desde un dominio
+   cuyo DNS controlás: es la única forma de demostrarle a Gmail que el mail sale
+   de quien dice salir. Un subdominio de `vercel.app` no sirve, porque el DNS no
+   es nuestro. Con la cuenta recién creada y sin dominio verificado, Resend sólo
+   entrega al email del titular de la cuenta, así que sirve para una prueba y no
+   para el piloto.
+
+   O sea que el orden real es: **comprar el dominio primero**. `lib/marca.ts` ya
+   nombra `takemycard.com.ar` como el dominio previsto, y comprarlo resuelve dos
+   cosas de una: el remitente de los mails y la dirección del sitio, que hoy es
+   una URL de Vercel.
+
+   Mientras tanto, para no dejar el piloto esperando a esa compra, hay un camino
+   que funciona sin dominio: un proveedor que permita verificar **una sola
+   dirección** de remitente en lugar de un dominio entero --Brevo lo permite en
+   su plan gratuito, con `proyectotarjetanfc@gmail.com` como remitente
+   verificado-- y los mismos campos de arriba con sus propios valores. La
+   entrega desde un Gmail es peor que desde un dominio propio (más chance de
+   spam), así que es un puente hasta la compra del dominio, no el destino.
+
+   Conviene además, en *Authentication → Rate Limits*, subir el límite de
+   *Emails per hour*, que con el SMTP de Supabase queda en un número pensado
+   para ese servidor de prueba y no para el propio.
+
 ## Dar de alta un cliente
 
 1. En `/admin` → *Nuevo perfil*: nombre, slug y plan.

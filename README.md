@@ -221,6 +221,12 @@ solo y no hay que acordarse de nada.
       Esto es lo que corresponde hacer *antes* de cobrarle a alguien: publicar
       precios al público sin identificar al oferente es el riesgo concreto.
 - [ ] Dominio propio y `NEXT_PUBLIC_SITE_URL`, **antes** de mandar a imprimir.
+      El dominio también destraba el SMTP propio: Resend sólo deja mandar desde
+      un dominio cuyo DNS controlamos, y un subdominio de `vercel.app` no lo es.
+- [ ] **SMTP propio** (Resend), en `docs/SUPABASE.md` paso 7. El servidor que
+      trae Supabase está limitado a unos pocos mails por hora y no garantiza la
+      entrega: con dos altas la misma tarde, el cliente se queda sin el mail de
+      confirmación y sin forma de saber por qué.
 - [ ] Definir precio de las tarjetas de repuesto.
 - [ ] Definir medio de pago y cobro. Lo que sí está resuelto técnicamente: la
       falta de pago se maneja pausando el perfil (`activo = false`), que muestra

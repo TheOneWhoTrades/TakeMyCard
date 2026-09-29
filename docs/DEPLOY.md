@@ -65,6 +65,11 @@ variable se lee en build time), y agregar `https://<dominio>/auth/callback` a
 las *Redirect URLs* de Supabase para que el enlace de ingreso por email siga
 funcionando.
 
+El dominio destraba además el envío de emails propio: Resend --y cualquier
+servicio serio-- sólo deja mandar desde un dominio cuyo DNS controlás, así que
+hasta que exista no hay remitente legítimo para los mails de confirmación
+(`docs/SUPABASE.md`, paso 7).
+
 Conviene hacerlo **antes de mandar a imprimir las tarjetas**. No es fatal si no
 se llega: el chip guarda `/t/<codigo_corto>`, así que al mudar el dominio basta
 con apuntar el viejo al nuevo (o mantenerlo redirigiendo) y las tarjetas siguen
