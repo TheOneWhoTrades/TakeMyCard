@@ -101,7 +101,7 @@ guarda `tudominio.com/t/<codigo_corto>` y lo que cambia es la fila.
    de confirmación vence a la hora (*Email OTP expiration*, en
    *Providers → Email*), y el SMTP incluido de Supabase está limitado a unos
    pocos mails por hora y sólo sirve para probar. Para el piloto hay que
-   configurar uno propio en *Project Settings → Auth → SMTP Settings*.
+   configurar uno propio en *Authentication → Emails → SMTP*.
 
 6. **Copiar las claves.** En *Project Settings → API* (según la versión del
    panel, puede ser una sección aparte llamada *API Keys*) están los dos valores:
@@ -133,7 +133,11 @@ guarda `tudominio.com/t/<codigo_corto>` y lo que cambia es la fila.
    confirmación no tiene forma de darse cuenta de por qué.
 
    El servicio elegido es **Resend**. Los valores van en
-   *Project Settings → Authentication → SMTP Settings* → *Enable Custom SMTP*:
+   *Authentication → Emails* --en la sección **NOTIFICATIONS** de la barra
+   lateral, no en la de CONFIGURATION-- pestaña *SMTP*, y activar
+   *Enable Custom SMTP*. (En paneles anteriores esto estaba en
+   *Project Settings → Auth → SMTP Settings*; si la guía y el panel no
+   coinciden, el panel manda.)
 
    | Campo | Valor |
    |---|---|
