@@ -22,8 +22,9 @@ export function FormularioAlta() {
     return (
       <div className="mensaje mensaje--ok">
         <strong>Cuenta creada.</strong> Te mandamos un email para confirmarla: abrilo y
-        seguí el enlace. Después avisanos y vinculamos tu cuenta con tu tarjeta para que
-        puedas entrar al panel.
+        seguí el enlace, que vence en una hora.{' '}
+        <strong>Si no lo ves, revisá el correo no deseado o spam.</strong> Después
+        avisanos y vinculamos tu cuenta con tu tarjeta para que puedas entrar al panel.
       </div>
     )
   }
