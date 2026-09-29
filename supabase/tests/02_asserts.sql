@@ -28,6 +28,10 @@ insert into public.links (profile_id, tipo, label, valor, orden)
   select id,'whatsapp','WhatsApp','2664000000',1
   from public.profiles where slug in ('assert-premium','assert-pausado');
 
+insert into public.links (profile_id, tipo, label, valor, orden, activo)
+  select id,'web','Link pausado','https://ejemplo.com',2,false
+  from public.profiles where slug = 'assert-premium';
+
 insert into public.contact_info (profile_id, telefono)
   select id,'2664000000' from public.profiles where slug='assert-premium';
 
@@ -36,6 +40,18 @@ insert into public.cards (profile_id, reposicion)
 
 select public.registrar_evento('assert-premium','vista',null,'https://ejemplo.com/una/ruta?q=secreto');
 select public.registrar_evento('assert-premium','clic',null,null,'guardar_contacto');
+select public.registrar_evento(
+  'assert-premium', 'clic',
+  (select id from public.links where label = 'WhatsApp' and profile_id =
+    (select id from public.profiles where slug = 'assert-premium')),
+  null, 'link'
+);
+select public.registrar_evento(
+  'assert-premium', 'clic',
+  (select id from public.links where label = 'Link pausado' and profile_id =
+    (select id from public.profiles where slug = 'assert-premium')),
+  null, 'link'
+);
 
 do $$
 declare
@@ -45,6 +61,16 @@ declare
   n int;
   t text;
 begin
+  -- === El bucket público sólo recibe las fotos que genera el editor =========
+  if (select file_size_limit from storage.buckets where id = 'fotos') <> 2097152 then
+    raise exception 'FALLA: el bucket fotos no tiene el límite de 2 MiB';
+  end if;
+
+  if (select allowed_mime_types from storage.buckets where id = 'fotos')
+     is distinct from array['image/jpeg']::text[] then
+    raise exception 'FALLA: el bucket fotos acepta formatos no previstos';
+  end if;
+
   -- === El visitante anónimo =================================================
   set local role anon;
 
@@ -62,6 +88,9 @@ begin
 
   select count(*) into n from public.admin_users;
   if n <> 0 then raise exception 'FALLA: anon ve quienes son administradores'; end if;
+
+  select count(*) into n from storage.objects where bucket_id = 'fotos';
+  if n <> 0 then raise exception 'FALLA: anon puede listar las fotos del bucket'; end if;
 
   reset role;
 
@@ -81,6 +110,22 @@ begin
   if n is distinct from 1 then
     raise exception 'FALLA: Guardar contacto no aparece como evento propio';
   end if;
+
+  select count(*) into n
+  from public.events e
+  join public.links l on l.id = e.link_id
+  where e.profile_id = v_premium and l.label = 'WhatsApp';
+  if n <> 1 then raise exception 'FALLA: un click de link activo no se registra'; end if;
+
+  select count(*) into n
+  from public.events e
+  join public.links l on l.id = e.link_id
+  where e.profile_id = v_premium and l.label = 'Link pausado';
+  if n <> 0 then raise exception 'FALLA: se registra un click de link pausado'; end if;
+
+  select count(*) into n from public.events
+  where profile_id = v_premium and tipo = 'clic' and accion = 'link';
+  if n <> 1 then raise exception 'FALLA: un click sin link activo infla las metricas'; end if;
 
   -- === Una tarjeta física no pierde su destino por un borrado ===============
   begin
@@ -104,6 +149,24 @@ begin
   select count(*) into n from public.events where profile_id <> v_premium;
   if n <> 0 then raise exception 'FALLA: un cliente ve la analitica de otro perfil'; end if;
 
+  -- El profesional con autoedición puede administrar sólo su propia carpeta.
+  insert into storage.objects (bucket_id, name)
+    values ('fotos', v_premium::text || '/assert-propia.jpg');
+
+  select count(*) into n from storage.objects
+    where bucket_id = 'fotos' and name = v_premium::text || '/assert-propia.jpg';
+  if n <> 1 then raise exception 'FALLA: un cliente no ve su propia foto'; end if;
+
+  begin
+    insert into storage.objects (bucket_id, name)
+      values ('fotos', v_basico::text || '/assert-ajena.jpg');
+    raise exception 'FALLA: un cliente pudo escribir en la carpeta de otro';
+  exception
+    when insufficient_privilege then null;
+    when others then
+      if sqlerrm like 'FALLA:%' then raise; end if;
+  end;
+
   reset role;
   perform set_config('request.jwt.claim.sub','', true);
 
@@ -116,6 +179,16 @@ begin
 
   select count(*) into n from public.events where profile_id = v_basico;
   if n <> 0 then raise exception 'FALLA: un plan basico pudo leer sus metricas'; end if;
+
+  begin
+    insert into storage.objects (bucket_id, name)
+      values ('fotos', v_basico::text || '/assert-basico.jpg');
+    raise exception 'FALLA: un plan basico pudo subir una foto';
+  exception
+    when insufficient_privilege then null;
+    when others then
+      if sqlerrm like 'FALLA:%' then raise; end if;
+  end;
 
   reset role;
   perform set_config('request.jwt.claim.sub','', true);

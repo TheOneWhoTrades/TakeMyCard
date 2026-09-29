@@ -23,7 +23,23 @@ export const LINK_META: Record<
   otro:      { nombre: 'Otro',       icono: '🔗', placeholder: 'https://…',                  ayuda: 'URL completa.' },
 }
 
-const esUrl = (valor: string) => /^https?:\/\//i.test(valor.trim())
+const empiezaComoUrl = (valor: string) => /^https?:\/\//i.test(valor.trim())
+
+/** Devuelve sólo destinos HTTP(S) que el navegador pueda interpretar. */
+function urlSegura(valor: string): string | null {
+  try {
+    const url = new URL(valor.trim())
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : null
+  } catch {
+    return null
+  }
+}
+
+/** Completa HTTPS para un dominio escrito sin protocolo y lo vuelve a validar. */
+function urlConHttps(valor: string): string | null {
+  const limpia = valor.trim()
+  return urlSegura(empiezaComoUrl(limpia) ? limpia : `https://${limpia.replace(/^\/+/, '')}`)
+}
 
 /** Deja sólo dígitos y le antepone el código de país argentino si falta. */
 function telefonoInternacional(valor: string): string {
@@ -46,31 +62,42 @@ export function hrefDeLink(link: Pick<Link, 'tipo' | 'valor'>): string | null {
 
   switch (link.tipo) {
     case 'whatsapp':
-      return esUrl(valor) ? valor : `https://wa.me/${telefonoInternacional(valor)}`
+      return empiezaComoUrl(valor) ? urlSegura(valor) : `https://wa.me/${telefonoInternacional(valor)}`
     case 'telefono':
       return `tel:+${telefonoInternacional(valor)}`
     case 'email':
       return `mailto:${valor}`
     case 'instagram':
-      return esUrl(valor) ? valor : `https://instagram.com/${usuario(valor)}`
+      return empiezaComoUrl(valor) ? urlSegura(valor) : `https://instagram.com/${usuario(valor)}`
     case 'facebook':
-      return esUrl(valor) ? valor : `https://facebook.com/${usuario(valor)}`
+      return empiezaComoUrl(valor) ? urlSegura(valor) : `https://facebook.com/${usuario(valor)}`
     case 'linkedin':
-      return esUrl(valor) ? valor : `https://linkedin.com/${usuario(valor).replace(/^linkedin\.com\//, '')}`
+      return empiezaComoUrl(valor)
+        ? urlSegura(valor)
+        : `https://linkedin.com/${usuario(valor).replace(/^linkedin\.com\//, '')}`
     case 'tiktok':
-      return esUrl(valor) ? valor : `https://tiktok.com/@${usuario(valor)}`
+      return empiezaComoUrl(valor) ? urlSegura(valor) : `https://tiktok.com/@${usuario(valor)}`
     case 'youtube':
-      return esUrl(valor) ? valor : `https://youtube.com/${valor.trim().startsWith('@') ? valor.trim() : `@${usuario(valor)}`}`
+      return empiezaComoUrl(valor)
+        ? urlSegura(valor)
+        : `https://youtube.com/${valor.trim().startsWith('@') ? valor.trim() : `@${usuario(valor)}`}`
     case 'ubicacion':
-      return esUrl(valor) ? valor : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(valor)}`
+      return empiezaComoUrl(valor)
+        ? urlSegura(valor)
+        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(valor)}`
     case 'alias_cbu':
       return null
     case 'web':
     case 'agenda':
     case 'otro':
     default:
-      return esUrl(valor) ? valor : `https://${valor.replace(/^\/+/, '')}`
+      return urlConHttps(valor)
   }
+}
+
+/** Alias/CBU es el único tipo que admite un valor sin URL navegable. */
+export function valorDeLinkValido(tipo: LinkTipo, valor: string): boolean {
+  return tipo === 'alias_cbu' || hrefDeLink({ tipo, valor }) !== null
 }
 
 /** Los links externos se abren en pestaña nueva; tel:/mailto: no. */

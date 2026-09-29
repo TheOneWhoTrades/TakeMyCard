@@ -27,6 +27,10 @@ function Boton({ texto, clase = 'btn' }: { texto: string; clase?: string }) {
  */
 export function EditorTarjetas({ profileId, cards }: { profileId: string; cards: Card[] }) {
   const [estado, accion] = useActionState<EstadoAccion, FormData>(registrarTarjeta, {})
+  const [estadoEliminar, accionEliminar] = useActionState<EstadoAccion, FormData>(
+    eliminarTarjeta,
+    {},
+  )
 
   const incluidas = cards.filter((c) => !c.reposicion).length
   const repuestos = cards.length - incluidas
@@ -39,36 +43,54 @@ export function EditorTarjetas({ profileId, cards }: { profileId: string; cards:
       </p>
 
       {cards.length > 0 && (
-        <table className="tabla">
-          <thead>
-            <tr>
-              <th>Entregada</th>
-              <th>Tipo</th>
-              <th>Nota</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {cards.map((card) => (
-              <tr key={card.id}>
-                <td>{card.entregada_el ?? '—'}</td>
-                <td>
-                  <span className={`pastilla ${card.reposicion ? '' : 'pastilla--ok'}`}>
-                    {card.reposicion ? 'repuesto' : 'incluida'}
-                  </span>
-                </td>
-                <td>{card.nota ?? ''}</td>
-                <td style={{ textAlign: 'right' }}>
-                  <form action={eliminarTarjeta}>
-                    <input type="hidden" name="id" value={card.id} />
-                    <input type="hidden" name="profile_id" value={profileId} />
-                    <Boton texto="Borrar" clase="btn btn--mini btn--peligro" />
-                  </form>
-                </td>
+        <>
+          {estadoEliminar.error && (
+            <div className="mensaje mensaje--error">{estadoEliminar.error}</div>
+          )}
+          {estadoEliminar.ok && <div className="mensaje mensaje--ok">{estadoEliminar.ok}</div>}
+
+          <table className="tabla">
+            <thead>
+              <tr>
+                <th>Entregada</th>
+                <th>Tipo</th>
+                <th>Nota</th>
+                <th />
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {cards.map((card) => (
+                <tr key={card.id}>
+                  <td>{card.entregada_el ?? '—'}</td>
+                  <td>
+                    <span className={`pastilla ${card.reposicion ? '' : 'pastilla--ok'}`}>
+                      {card.reposicion ? 'repuesto' : 'incluida'}
+                    </span>
+                  </td>
+                  <td>{card.nota ?? ''}</td>
+                  <td style={{ textAlign: 'right' }}>
+                    <form
+                      action={accionEliminar}
+                      onSubmit={(event) => {
+                        if (
+                          !window.confirm(
+                            'Vas a borrar el registro de esta tarjeta. No se borra el perfil, pero después podría eliminarse si no quedan tarjetas registradas. ¿Continuar?',
+                          )
+                        ) {
+                          event.preventDefault()
+                        }
+                      }}
+                    >
+                      <input type="hidden" name="id" value={card.id} />
+                      <input type="hidden" name="profile_id" value={profileId} />
+                      <Boton texto="Borrar" clase="btn btn--mini btn--peligro" />
+                    </form>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
       )}
 
       <form action={accion} className="tarjeta">

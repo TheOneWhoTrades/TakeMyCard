@@ -1,0 +1,29 @@
+# Análisis estático adicional: busca patrones de seguridad en TypeScript antes
+# de que lleguen a producción. No requiere claves ni toca Supabase/Vercel.
+name: Seguridad de código
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  analizar:
+    name: Analizar JavaScript y TypeScript
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inicializar CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          build-mode: none
+
+      - name: Analizar
+        uses: github/codeql-action/analyze@v3

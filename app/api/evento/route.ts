@@ -33,17 +33,52 @@ export const dynamic = 'force-dynamic'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const SLUG = /^[a-z0-9-]{3,50}$/
+// Un beacon válido ocupa unos pocos cientos de bytes. Este tope evita que un
+// endpoint público de analítica termine parseando JSON arbitrariamente grande.
+const MAX_CUERPO_BYTES = 4 * 1024
 
 /** 204 sin cuerpo: el navegador no espera respuesta de un beacon. */
 const ok = () => new Response(null, { status: 204, headers: { 'Cache-Control': 'no-store' } })
 
-export async function POST(request: Request) {
-  let cuerpo: unknown
-  try {
-    cuerpo = await request.json()
-  } catch {
-    return ok()
+async function jsonLimitado(request: Request): Promise<unknown | null> {
+  const contentLength = request.headers.get('content-length')
+  if (contentLength !== null && (!/^\d+$/.test(contentLength) || Number(contentLength) > MAX_CUERPO_BYTES)) {
+    return null
   }
+
+  const reader = request.body?.getReader()
+  if (!reader) return null
+
+  const partes: Uint8Array[] = []
+  let bytes = 0
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+
+    bytes += value.byteLength
+    if (bytes > MAX_CUERPO_BYTES) {
+      await reader.cancel()
+      return null
+    }
+    partes.push(value)
+  }
+
+  const cuerpo = new Uint8Array(bytes)
+  let inicio = 0
+  for (const parte of partes) {
+    cuerpo.set(parte, inicio)
+    inicio += parte.byteLength
+  }
+
+  try {
+    return JSON.parse(new TextDecoder().decode(cuerpo))
+  } catch {
+    return null
+  }
+}
+
+export async function POST(request: Request) {
+  const cuerpo = await jsonLimitado(request)
 
   if (typeof cuerpo !== 'object' || cuerpo === null) return ok()
   const { slug, tipo, linkId, referrer, accion } = cuerpo as Record<string, unknown>

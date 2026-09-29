@@ -77,7 +77,7 @@ select public.registrar_evento(
 select public.registrar_evento('perfil-pausado', 'vista', null, null);
 \echo '-- tipo invalido: se descarta --'
 select public.registrar_evento('estudio-demo', 'robar-datos', null, null);
-\echo '-- link de OTRO perfil: se registra el evento pero sin link --'
+\echo '-- link de OTRO perfil: se descarta --'
 select public.registrar_evento('estudio-demo', 'clic',
   (select id from public.links limit 1 offset 0), null);
 reset role;

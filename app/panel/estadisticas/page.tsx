@@ -19,10 +19,25 @@ export default async function PaginaEstadisticas({
 
   const dias = periodoValido((await searchParams).dias)
 
-  const { data } = await supabase.rpc('metricas_perfil', {
+  const { data, error } = await supabase.rpc('metricas_perfil', {
     p_profile_id: profile.id,
     p_dias: dias,
   })
+
+  // Una respuesta vacía significa que todavía no hubo actividad; un error es
+  // otra cosa. Mostrar ambos como ceros haría que el cliente crea que su
+  // tarjeta no tuvo aperturas cuando en realidad no pudimos consultar la base.
+  if (error) {
+    return (
+      <>
+        <h2>Estadísticas</h2>
+        <div className="mensaje mensaje--error">
+          No pudimos cargar las estadísticas ahora. Probá actualizar la página en unos
+          minutos.
+        </div>
+      </>
+    )
+  }
 
   return (
     <>

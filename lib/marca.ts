@@ -279,11 +279,11 @@ export const COMPARATIVA: FilaComparativa[] = [
     nota: 'En el Básico los cambios los hacemos nosotros cuando los pedís.',
   },
   {
-    funcion: 'Seguimiento de datos',
+    funcion: 'Métricas de uso',
     basico: false,
     plus: false,
     premium: true,
-    nota: 'Cuántas veces abrieron tu tarjeta y qué botón tocaron.',
+    nota: 'Aperturas y botones tocados, sin identificar visitantes.',
   },
   {
     funcion: 'Landing personalizada',

@@ -1,4 +1,6 @@
 import { siteUrl } from '@/lib/env'
+import { DEMO_PUBLICA, esDemoPublica } from '@/lib/demo'
+import { fotoValidaDePerfil } from '@/lib/fotos'
 import { obtenerPerfilPublico } from '@/lib/perfil'
 import { generarVCard, nombreArchivoVCard } from '@/lib/vcard'
 
@@ -23,6 +25,21 @@ export async function GET(
     })
   }
 
+  if (resultado.estado !== 'activo' && esDemoPublica(slug)) {
+    const { profile, links, contacto } = DEMO_PUBLICA
+    const vcardDemo = generarVCard(profile, links, {
+      urlPerfil: `${siteUrl()}/${profile.slug}`,
+      contacto,
+    })
+    return new Response(vcardDemo, {
+      headers: {
+        'Content-Type': 'text/vcard; charset=utf-8',
+        'Content-Disposition': `attachment; filename="${nombreArchivoVCard(profile)}"`,
+        'Cache-Control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=300',
+      },
+    })
+  }
+
   if (resultado.estado !== 'activo') {
     return new Response('Perfil no disponible', { status: 404 })
   }
@@ -30,9 +47,13 @@ export async function GET(
   const { profile, links, contacto } = resultado
 
   let fotoBase64: { datos: string; mime: string } | null = null
-  if (profile.foto_url) {
+  // Nunca se sigue una URL arbitraria desde el servidor. Además de evitar que
+  // una ficha vieja contacte servicios internos, la vCard sólo lleva la foto
+  // que el producto administró dentro de su bucket.
+  const fotoUrl = fotoValidaDePerfil(profile.foto_url, profile.id)
+  if (fotoUrl) {
     try {
-      const respuesta = await fetch(profile.foto_url, { signal: AbortSignal.timeout(3000) })
+      const respuesta = await fetch(fotoUrl, { signal: AbortSignal.timeout(3000) })
       const mime = respuesta.headers.get('content-type') ?? ''
       if (respuesta.ok && mime.startsWith('image/')) {
         const buffer = Buffer.from(await respuesta.arrayBuffer())

@@ -2,6 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { requerirCliente } from '@/lib/auth'
+import { fotoValidaDePerfil, rutaDeFotoPropia } from '@/lib/fotos'
+import { valorDeLinkValido } from '@/lib/links'
 import { LINK_TIPOS, esLayout, type LinkTipo } from '@/lib/types'
 import { PALETAS } from '@/lib/paletas'
 import type { EstadoAccion } from '@/components/EditorLinks'
@@ -27,26 +29,6 @@ function mensajeError(error: { code?: string; message: string }): string {
   return 'No se pudo guardar. Probá de nuevo.'
 }
 
-/** Sólo aceptamos URLs de nuestro propio bucket de fotos. */
-function fotoValida(url: string | null): string | null {
-  if (!url) return null
-  const base = process.env.NEXT_PUBLIC_SUPABASE_URL
-  if (!base) return null
-  try {
-    const candidata = new URL(url)
-    const nuestra = new URL(base)
-    // Si no es del bucket, se descarta en silencio: el campo lo llena el
-    // componente de subida, así que un valor ajeno sólo puede venir de alguien
-    // tocando el HTML. Aceptarlo permitiría usar el perfil para incrustar una
-    // imagen remota que registre quién abre la tarjeta.
-    if (candidata.hostname !== nuestra.hostname) return null
-    if (!candidata.pathname.startsWith('/storage/v1/object/public/fotos/')) return null
-    return candidata.toString()
-  } catch {
-    return null
-  }
-}
-
 // --- Perfil ------------------------------------------------------------------
 
 export async function guardarPerfil(
@@ -65,10 +47,10 @@ export async function guardarPerfil(
     nombre,
     profesion: opcional(formData, 'profesion'),
     bio: opcional(formData, 'bio'),
-    foto_url: fotoValida(opcional(formData, 'foto_url')),
+    foto_url: fotoValidaDePerfil(opcional(formData, 'foto_url'), profile.id),
     // La portada se guarda siempre, aunque el plan no la muestre: así, si el
     // cliente sube de plan, no tiene que volver a cargarla.
-    portada_url: fotoValida(opcional(formData, 'portada_url')),
+    portada_url: fotoValidaDePerfil(opcional(formData, 'portada_url'), profile.id),
     paleta: PALETAS.some((p) => p.id === paleta) ? paleta : profile.paleta,
     // El layout propio es del Premium. Si el formulario trae otra cosa, se
     // ignora: un select editado a mano no compra un plan.
@@ -78,6 +60,20 @@ export async function guardarPerfil(
 
   const { error } = await supabase.from('profiles').update(datos).eq('id', profile.id)
   if (error) return { error: mensajeError(error) }
+
+  // Recién ahora se pueden borrar las versiones reemplazadas. Hacerlo cuando
+  // se toca “Quitar” rompería la página pública si después se cancela el
+  // formulario. Si Storage no responde, el perfil nuevo sigue siendo válido:
+  // queda un archivo huérfano, pero nunca una foto rota.
+  const fotosEnUso = new Set([datos.foto_url, datos.portada_url].filter(Boolean))
+  const rutasAnteriores = [...new Set([profile.foto_url, profile.portada_url])]
+    .filter((url): url is string => Boolean(url) && !fotosEnUso.has(url))
+    .map((url) => rutaDeFotoPropia(url, profile.id))
+    .filter((ruta): ruta is string => Boolean(ruta))
+
+  if (rutasAnteriores.length) {
+    await supabase.storage.from('fotos').remove(rutasAnteriores)
+  }
 
   revalidatePath('/panel')
   revalidatePath(`/${profile.slug}`)
@@ -138,6 +134,7 @@ export async function crearLink(
   if (!LINK_TIPOS.includes(tipo)) return { error: 'Elegí un tipo de botón válido.' }
   if (!label) return { error: 'Poné un texto para el botón.' }
   if (!valor) return { error: 'Falta el dato del botón (número, usuario o dirección).' }
+  if (!valorDeLinkValido(tipo, valor)) return { error: 'La URL no es válida. Usá una dirección web completa.' }
 
   const { data: ultimo } = await supabase
     .from('links')
@@ -162,15 +159,25 @@ export async function crearLink(
   return { ok: 'Botón agregado.' }
 }
 
-export async function actualizarLink(formData: FormData) {
+export async function actualizarLink(
+  _estado: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
   const { supabase, profile } = await requerirCliente()
+  const tipo = texto(formData, 'tipo') as LinkTipo
+  const label = texto(formData, 'label')
+  const valor = texto(formData, 'valor')
 
-  await supabase
+  if (!LINK_TIPOS.includes(tipo)) return { error: 'Elegí un tipo de botón válido.' }
+  if (!label || !valor) return { error: 'Completá el texto y el dato del botón.' }
+  if (!valorDeLinkValido(tipo, valor)) return { error: 'La URL no es válida. Usá una dirección web completa.' }
+
+  const { error } = await supabase
     .from('links')
     .update({
-      label: texto(formData, 'label'),
-      valor: texto(formData, 'valor'),
-      tipo: texto(formData, 'tipo'),
+      label,
+      valor,
+      tipo,
       activo: formData.get('activo') === 'on',
     })
     .eq('id', texto(formData, 'id'))
@@ -178,47 +185,59 @@ export async function actualizarLink(formData: FormData) {
     // intención escrita en la consulta y no sólo en la base.
     .eq('profile_id', profile.id)
 
+  if (error) return { error: mensajeError(error) }
   await revalidar(profile.slug)
+  return { ok: 'Botón guardado.' }
 }
 
-export async function eliminarLink(formData: FormData) {
+export async function eliminarLink(
+  _estado: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
   const { supabase, profile } = await requerirCliente()
-  await supabase
+  const { error } = await supabase
     .from('links')
     .delete()
     .eq('id', texto(formData, 'id'))
     .eq('profile_id', profile.id)
+  if (error) return { error: mensajeError(error) }
   await revalidar(profile.slug)
+  return { ok: 'Botón eliminado.' }
 }
 
-export async function moverLink(formData: FormData) {
+export async function moverLink(
+  _estado: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
   const { supabase, profile } = await requerirCliente()
   const id = texto(formData, 'id')
   const direccion = texto(formData, 'direccion') === 'arriba' ? -1 : 1
 
-  const { data: links } = await supabase
+  const { data: links, error: errorLectura } = await supabase
     .from('links')
     .select('id, orden')
     .eq('profile_id', profile.id)
     .order('orden', { ascending: true })
     .order('created_at', { ascending: true })
 
-  if (!links) return
+  if (errorLectura || !links) return { error: 'No pudimos leer los botones. Probá de nuevo.' }
 
   const indice = links.findIndex((l) => l.id === id)
   const destino = indice + direccion
-  if (indice === -1 || destino < 0 || destino >= links.length) return
+  if (indice === -1 || destino < 0 || destino >= links.length) return {}
 
   const reordenados = [...links]
   ;[reordenados[indice], reordenados[destino]] = [reordenados[destino], reordenados[indice]]
 
   for (const [posicion, link] of reordenados.entries()) {
-    await supabase
+    const { error } = await supabase
       .from('links')
       .update({ orden: posicion + 1 })
       .eq('id', link.id)
       .eq('profile_id', profile.id)
+    if (error) return { error: mensajeError(error) }
   }
 
   await revalidar(profile.slug)
+  return { ok: 'Orden actualizado.' }
 }

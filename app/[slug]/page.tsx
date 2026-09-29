@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Perfil } from '@/components/perfil/Perfil'
+import { DEMO_PUBLICA, esDemoPublica } from '@/lib/demo'
 import { siteUrl } from '@/lib/env'
+import { perfilConFotosSeguras } from '@/lib/fotos'
 import { obtenerPerfilPublico } from '@/lib/perfil'
 import { CAPACIDADES } from '@/lib/types'
 import { PerfilNoDisponible } from './no-disponible'
@@ -33,11 +35,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Tarjeta no disponible', robots: { index: false } }
   }
 
+  let profile
   if (resultado.estado !== 'activo') {
-    return { title: 'Tarjeta no disponible', robots: { index: false } }
+    if (!esDemoPublica(slug)) {
+      return { title: 'Tarjeta no disponible', robots: { index: false } }
+    }
+    profile = DEMO_PUBLICA.profile
+  } else {
+    profile = perfilConFotosSeguras(resultado.profile)
   }
-
-  const { profile } = resultado
   const titulo = profile.profesion ? `${profile.nombre} · ${profile.profesion}` : profile.nombre
   const descripcion = profile.bio ?? `Contacto de ${profile.nombre}.`
 
@@ -74,6 +80,10 @@ export default async function PaginaPerfil({ params }: Props) {
   // Un slug inexistente o pausado sí se cachea, y está bien: la respuesta no va
   // a cambiar en el próximo minuto. El fallo de base no llega hasta acá, lo
   // toma el error.tsx de la ruta.
+  if (resultado.estado !== 'activo' && esDemoPublica(slug)) {
+    return <Perfil {...DEMO_PUBLICA} medir={false} />
+  }
+
   if (resultado.estado !== 'activo') {
     return <PerfilNoDisponible estado={resultado.estado} slug={slug} />
   }
@@ -81,9 +91,11 @@ export default async function PaginaPerfil({ params }: Props) {
   // La visita se cuenta desde el navegador (ver components/RastreoPerfil.tsx).
   // Contarla acá daba una cota inferior: esta página está cacheada, así que el
   // render ocurre una vez por regeneración, no una por visita.
+  const profile = perfilConFotosSeguras(resultado.profile)
+
   return (
     <Perfil
-      profile={resultado.profile}
+      profile={profile}
       links={resultado.links}
       contacto={resultado.contacto}
     />

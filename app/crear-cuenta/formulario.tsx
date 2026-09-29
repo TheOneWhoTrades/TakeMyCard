@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
+import { LEGAL } from '@/lib/marca'
 import { crearCuenta, type EstadoAlta } from './actions'
 
 function Boton() {
@@ -54,12 +55,17 @@ export function FormularioAlta() {
         <input type="password" name="password2" autoComplete="new-password" required />
       </label>
 
-      {/* Arriba del botón y no debajo: lo que se acepta al apretar tiene que
-          poder leerse antes de apretar, no después. */}
-      <p className="alta__legal">
-        Al crear la cuenta aceptás los <Link href="/terminos">términos y condiciones</Link> y
-        la <Link href="/privacidad">política de privacidad</Link>.
-      </p>
+      {/* `campo--legal` le da tamaño de objetivo táctil: es el único check del
+          sitio que hay que apretar para aceptar algo, y al tamaño por omisión
+          de un teléfono pasa desapercibido. */}
+      <label className="campo--check campo--legal">
+        <input type="checkbox" name="acepta_documentos" required />
+        <span>
+          Leí y acepto los <Link href="/terminos">términos y condiciones</Link> y la{' '}
+          <Link href="/privacidad">política de privacidad</Link> vigentes desde{' '}
+          {LEGAL.vigenteDesde}.
+        </span>
+      </label>
 
       <Boton />
     </form>

@@ -99,7 +99,8 @@ Para crear el proyecto Supabase, aplicar el esquema y darte de alta como admin,
 seguí [`docs/SUPABASE.md`](docs/SUPABASE.md). Para publicar,
 [`docs/DEPLOY.md`](docs/DEPLOY.md). Antes de pasar del piloto a cobrar,
 revisá las puertas operativas en
-[`docs/LAUNCH_GATES_ARGENTINA.md`](docs/LAUNCH_GATES_ARGENTINA.md).
+[`docs/LAUNCH_GATES_ARGENTINA.md`](docs/LAUNCH_GATES_ARGENTINA.md), incluido el
+[procedimiento de continuidad e incidentes](docs/CONTINUIDAD_E_INCIDENTES.md).
 
 ## Scripts
 
@@ -111,6 +112,8 @@ revisá las puertas operativas en
 | `npm run typecheck` | TypeScript sin emitir |
 | `npm run test:db` | Levanta un Postgres efímero, aplica las migraciones y verifica las políticas de RLS |
 | `npm run test:vcard` | Verifica el formato del `.vcf` generado |
+| `npm run test:fotos` | Verifica que las fotos se aíslen por perfil y origen |
+| `npm run test:evento` | Verifica el límite de tamaño del beacon de analítica |
 
 ## Estructura
 
