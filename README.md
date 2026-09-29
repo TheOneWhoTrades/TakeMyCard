@@ -220,6 +220,10 @@ solo y no hay que acordarse de nada.
       domicilio) y poner `MODO_PILOTO` en `false`. El email ya está cargado.
       Esto es lo que corresponde hacer *antes* de cobrarle a alguien: publicar
       precios al público sin identificar al oferente es el riesgo concreto.
+- [ ] **Resolver el hosting antes de cobrar.** El plan Hobby de Vercel es de uso
+      personal no comercial, y publicar precios ya cae en su definición de uso
+      comercial. Vercel lo aplica pausando el despliegue, y con el despliegue
+      caído las tarjetas ya entregadas dejan de resolver. Ver `docs/DEPLOY.md`.
 - [ ] Dominio propio y `NEXT_PUBLIC_SITE_URL`, **antes** de mandar a imprimir.
       El dominio también destraba el SMTP propio: Resend sólo deja mandar desde
       un dominio cuyo DNS controlamos, y un subdominio de `vercel.app` no lo es.

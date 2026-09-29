@@ -15,6 +15,36 @@ Además, `/[slug]/vcard` tiene que responder con `Content-Type: text/vcard` para
 que el teléfono abra el diálogo de "Agregar contacto"; un hosting estático no
 permite controlar ese encabezado.
 
+## El plan gratuito no sirve para vender
+
+El plan **Hobby** de Vercel es explícitamente de uso personal y **no
+comercial**. La definición que usa Vercel es amplia: cuenta como uso comercial
+cualquier despliegue destinado al beneficio económico de alguien involucrado en
+el proyecto, y no hace falta cobrar desde el sitio --alcanza con promocionar un
+servicio pago. Un sitio que publica tres planes con precio y un botón "Quiero mi
+tarjeta" está adentro de esa definición sin lugar a interpretación.
+
+Vercel aplica esto pausando la cuenta o el despliegue. En este producto eso no
+es una molestia: **las tarjetas ya entregadas dejan de funcionar**. El chip
+guarda `/t/<codigo_corto>`, que resuelve la indirección contra nuestro servidor;
+si el servidor no responde, la tarjeta no lleva a ninguna parte. La indirección
+protege de un cambio de dominio, no de una caída del hosting.
+
+O sea que antes de cobrarle a un cliente hay que elegir uno de estos caminos:
+
+- **Vercel Pro** (USD 20 por mes y por miembro del equipo). Es lo que no
+  requiere ninguna migración: el proyecto ya está ahí y sigue igual.
+- **Otro hosting cuyo plan gratuito admita uso comercial.** Existen, pero este
+  proyecto usa Server Actions, rutas dinámicas y cookies HTTP-only, así que la
+  migración es trabajo real y hay que probarla entera antes de mover nada.
+
+Lo que no es opción es quedarse en Hobby y esperar que no pase nada: el riesgo
+no se paga en dinero sino en tarjetas físicas muertas en el bolsillo de un
+cliente que ya pagó.
+
+El dominio propio es independiente de esta decisión: se compra una vez y apunta
+a donde haga falta, así que comprarlo no ata a ningún hosting.
+
 ## Pasos
 
 1. **Importar el repositorio** en [vercel.com/new](https://vercel.com/new).
