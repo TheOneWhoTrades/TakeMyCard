@@ -1211,6 +1211,26 @@ textarea { min-height: 5.5rem; resize: vertical; font-family: var(--serif); }
   font-size: 0.82rem;
 }
 
+/* Aviso de términos del alta.
+   Va con el cuerpo del formulario y no con el de un pie de página: aceptar
+   algo que no se llega a leer no es aceptar, y es justamente la parte que
+   tiene que quedar probada si algún día alguien discute el consentimiento.
+   El selector lleva `.login` adelante para ganarle a `.login p`, que lo
+   achicaría y lo apagaría de nuevo. */
+.login .alta__legal {
+  margin: 1.75rem 0 1rem;
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--texto);
+}
+
+.login .alta__legal a {
+  font-weight: 600;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
 .pastilla--basico  { color: var(--tinta-suave); }
 .pastilla--plus    { color: var(--verde); border-color: var(--verde); }
 .pastilla--premium { color: var(--tierra); border-color: var(--tierra); }

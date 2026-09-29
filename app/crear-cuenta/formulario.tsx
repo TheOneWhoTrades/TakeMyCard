@@ -54,12 +54,14 @@ export function FormularioAlta() {
         <input type="password" name="password2" autoComplete="new-password" required />
       </label>
 
-      <Boton />
-
-      <p className="login__pie">
+      {/* Arriba del botón y no debajo: lo que se acepta al apretar tiene que
+          poder leerse antes de apretar, no después. */}
+      <p className="alta__legal">
         Al crear la cuenta aceptás los <Link href="/terminos">términos y condiciones</Link> y
         la <Link href="/privacidad">política de privacidad</Link>.
       </p>
+
+      <Boton />
     </form>
   )
 }

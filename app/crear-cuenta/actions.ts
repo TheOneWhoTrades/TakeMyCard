@@ -44,7 +44,10 @@ export async function crearCuenta(_estado: EstadoAlta, formData: FormData): Prom
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo: `${base}/auth/callback?next=/panel` },
+    // `alta=1` le dice al callback que este enlace es una confirmación de
+    // cuenta y no un ingreso: si no puede abrir sesión, el email igual quedó
+    // confirmado y corresponde otro mensaje.
+    options: { emailRedirectTo: `${base}/auth/callback?next=/panel&alta=1` },
   })
 
   if (error) {
