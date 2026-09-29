@@ -227,10 +227,15 @@ solo y no hay que acordarse de nada.
 - [ ] Dominio propio y `NEXT_PUBLIC_SITE_URL`, **antes** de mandar a imprimir.
       El dominio también destraba el SMTP propio: Resend sólo deja mandar desde
       un dominio cuyo DNS controlamos, y un subdominio de `vercel.app` no lo es.
-- [ ] **SMTP propio** (Resend), en `docs/SUPABASE.md` paso 7. El servidor que
-      trae Supabase está limitado a unos pocos mails por hora y no garantiza la
-      entrega: con dos altas la misma tarde, el cliente se queda sin el mail de
-      confirmación y sin forma de saber por qué.
+- [ ] **SMTP propio.** El servidor que trae Supabase está limitado a 2 mails por
+      hora contando todo: con dos altas la misma tarde, el tercer cliente se
+      queda sin el mail de confirmación y sin forma de saber por qué. Durante el
+      piloto se usa **Brevo** con el Gmail del proyecto como remitente
+      verificado, que no necesita dominio (`docs/SUPABASE.md`, paso 7); como
+      sale de un `@gmail.com`, Gmail lo manda a correo no deseado seguido, y por
+      eso el aviso de revisar spam está en `/crear-cuenta` y en `/ingresar`. El
+      destino es **Resend** con dominio propio, que es lo que saca el mail de
+      spam. Migrar antes de vender sin acompañar el alta por WhatsApp.
 - [ ] Definir precio de las tarjetas de repuesto.
 - [ ] Definir medio de pago y cobro. Lo que sí está resuelto técnicamente: la
       falta de pago se maneja pausando el perfil (`activo = false`), que muestra

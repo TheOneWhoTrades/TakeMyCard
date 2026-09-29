@@ -164,17 +164,42 @@ guarda `tudominio.com/t/<codigo_corto>` y lo que cambia es la fila.
    cosas de una: el remitente de los mails y la dirección del sitio, que hoy es
    una URL de Vercel.
 
-   Mientras tanto, para no dejar el piloto esperando a esa compra, hay un camino
-   que funciona sin dominio: un proveedor que permita verificar **una sola
-   dirección** de remitente en lugar de un dominio entero --Brevo lo permite en
-   su plan gratuito, con `proyectotarjetanfc@gmail.com` como remitente
-   verificado-- y los mismos campos de arriba con sus propios valores. La
-   entrega desde un Gmail es peor que desde un dominio propio (más chance de
-   spam), así que es un puente hasta la compra del dominio, no el destino.
+   **Puente vigente durante el piloto: Brevo.** Hasta que exista el dominio se
+   usa un proveedor que permite verificar **una sola dirección** de remitente en
+   lugar de un dominio entero. Brevo lo hace en su plan gratuito (300 mensajes
+   por día) con `proyectotarjetanfc@gmail.com` como remitente verificado.
+
+   Del lado de Brevo: crear la cuenta, *Settings → Senders & IPs → Senders →
+   Add a sender* con esa dirección, y confirmar el código de 6 dígitos que llega
+   a esa casilla --sin ese paso el remitente no se puede usar--. Después,
+   *Settings → SMTP & API → SMTP*, donde están el login y la **SMTP key**. Ojo
+   con esto: la SMTP key **no** es la API key, son dos cosas distintas en la
+   misma pantalla.
+
+   | Campo | Valor |
+   |---|---|
+   | Host | `smtp-relay.brevo.com` |
+   | Port | `587` |
+   | Username | el login que muestra *SMTP & API* (el email de la cuenta, o uno con forma `<id>@smtp-brevo.com` según cuándo se creó) |
+   | Password | la **SMTP key**, no la API key |
+   | Sender email | `proyectotarjetanfc@gmail.com`, ya verificado |
+   | Sender name | `TakeMyCard` |
+
+   **Lo que este puente no resuelve.** Desde febrero de 2024 Gmail endureció la
+   autenticación: un mensaje cuyo remitente dice `@gmail.com` pero sale por un
+   servidor que no es de Google no puede firmarse con DKIM de gmail.com ni
+   figura en el SPF de Gmail, así que no autentica y tiene muchas chances de ir
+   a correo no deseado. Como casi todos los clientes usan Gmail, el aviso
+   "revisá el correo no deseado" de `/crear-cuenta` y de `/ingresar` no es una
+   formalidad: es parte del funcionamiento esperado mientras dure el puente.
+
+   Decisión tomada con esto a la vista: durante el piloto alcanza, porque son
+   pocos clientes y el alta se acompaña por WhatsApp. No alcanza para vender sin
+   acompañamiento, y ahí es donde entra el dominio con Resend.
 
    Conviene además, en *Authentication → Rate Limits*, subir el límite de
-   *Emails per hour*, que con el SMTP de Supabase queda en un número pensado
-   para ese servidor de prueba y no para el propio.
+   *Emails per hour*, que con el SMTP de Supabase queda en 2 por hora --un
+   número pensado para ese servidor compartido de prueba y no para uno propio--.
 
 ## Dar de alta un cliente
 
