@@ -50,7 +50,10 @@ export async function crearCuenta(_estado: EstadoAlta, formData: FormData): Prom
     email,
     password,
     options: {
-      emailRedirectTo: `${base}/auth/callback?next=/panel`,
+      // `alta=1` le dice al callback que este enlace es una confirmación de
+      // cuenta y no un ingreso: si no puede abrir sesión, el email igual quedó
+      // confirmado y corresponde otro mensaje.
+      emailRedirectTo: `${base}/auth/callback?next=/panel&alta=1`,
       // Deja constancia de qué textos públicos aceptó al darse de alta. Es una
       // traza operativa del alta, no una sustitución de la revisión legal que
       // sigue siendo necesaria antes de empezar a cobrar.

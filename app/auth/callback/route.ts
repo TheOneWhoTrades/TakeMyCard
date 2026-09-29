@@ -4,8 +4,9 @@ import { supabaseServer } from '@/lib/supabase/server'
 /**
  * Aterrizaje del enlace de un solo uso que llega por email.
  *
- * Supabase manda a la persona acá con un `code` en la URL; este handler lo
- * canjea por una sesión, deja las cookies puestas y la manda al panel.
+ * Supabase manda a la persona acá después de verificar el token. Este handler
+ * canjea lo que venga en la URL por una sesión, deja las cookies puestas y la
+ * manda al panel.
  *
  * El destino se valida: sin eso, un mail con
  * /auth/callback?next=https://sitio-falso.com dejaría a alguien recién
@@ -13,26 +14,53 @@ import { supabaseServer } from '@/lib/supabase/server'
  */
 export const dynamic = 'force-dynamic'
 
+/** Igual que en el formulario de ingreso: sólo se aceptan rutas internas. */
+function destinoSeguro(valor: string | null): string {
+  if (!valor) return '/panel'
+  // `//otro.com` y `/\otro.com` también son absolutos para el navegador.
+  if (!valor.startsWith('/') || valor.startsWith('//') || valor.startsWith('/\\')) return '/panel'
+  return valor
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl
-  const code = searchParams.get('code')
-  const solicitado = searchParams.get('next') ?? '/panel'
+  const destino = destinoSeguro(searchParams.get('next'))
+  const esAlta = searchParams.get('alta') === '1'
 
-  const destino =
-    solicitado.startsWith('/') && !solicitado.startsWith('//') && !solicitado.startsWith('/\\')
-      ? solicitado
-      : '/panel'
+  const invalido = `${origin}/ingresar?error=enlace-invalido`
 
-  if (!code) {
-    return NextResponse.redirect(`${origin}/ingresar?error=enlace-invalido`)
+  // 1. Supabase verificó y falló, y lo dice en la propia URL: el token venció,
+  //    ya se había usado, o el destino no estaba permitido. No hay nada que
+  //    canjear y el enlace efectivamente no sirve.
+  if (searchParams.has('error') || searchParams.has('error_code')) {
+    return NextResponse.redirect(invalido)
   }
 
   const supabase = await supabaseServer()
-  const { error } = await supabase.auth.exchangeCodeForSession(code)
 
-  if (error) {
-    return NextResponse.redirect(`${origin}/ingresar?error=enlace-invalido`)
+  // 2. Camino normal (PKCE): el `code` se canjea contra el verificador que
+  //    quedó en una cookie cuando se pidió el enlace.
+  const code = searchParams.get('code')
+  if (code) {
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    if (!error) return NextResponse.redirect(`${origin}${destino}`)
   }
 
-  return NextResponse.redirect(`${origin}${destino}`)
+  // 3. Llegamos sin poder abrir sesión, pero sin que Supabase reportara error.
+  //
+  //    Pasa cuando el mail se abre en un navegador distinto del que pidió el
+  //    enlace --el cliente crea la cuenta en la computadora y confirma desde el
+  //    teléfono, o el mail abre su propio navegador embebido--: la cookie con
+  //    el verificador quedó del otro lado y el canje no puede completarse.
+  //
+  //    Para una confirmación de alta eso NO es un fracaso: Supabase marca el
+  //    email como confirmado *antes* de redirigir acá, así que la cuenta quedó
+  //    lista y lo único que falta es iniciar sesión. Decirle "el enlace venció"
+  //    a alguien cuya cuenta acaba de quedar confirmada lo manda a pedir un
+  //    enlace nuevo para arreglar algo que ya está bien.
+  if (esAlta) {
+    return NextResponse.redirect(`${origin}/ingresar?aviso=cuenta-confirmada`)
+  }
+
+  return NextResponse.redirect(invalido)
 }

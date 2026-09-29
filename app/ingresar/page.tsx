@@ -11,9 +11,9 @@ export const metadata = {
 export default async function PaginaIngresar({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; error?: string }>
+  searchParams: Promise<{ next?: string; error?: string; aviso?: string }>
 }) {
-  const { next, error } = await searchParams
+  const { next, error, aviso } = await searchParams
 
   return (
     <main className="login">
@@ -26,6 +26,13 @@ export default async function PaginaIngresar({
         Para clientes de los planes Plus y Premium. Si tenés el plan Básico, los cambios
         los hacemos nosotros: escribinos y listo.
       </p>
+
+      {aviso === 'cuenta-confirmada' && (
+        <div className="mensaje mensaje--ok">
+          <strong>Tu cuenta quedó confirmada.</strong> Entrá con tu email o con la
+          contraseña que elegiste.
+        </div>
+      )}
 
       {error === 'enlace-invalido' && (
         <div className="mensaje mensaje--error">

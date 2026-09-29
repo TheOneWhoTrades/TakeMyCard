@@ -55,7 +55,10 @@ export function FormularioAlta() {
         <input type="password" name="password2" autoComplete="new-password" required />
       </label>
 
-      <label className="campo--check" style={{ alignItems: 'flex-start' }}>
+      {/* `campo--legal` le da tamaño de objetivo táctil: es el único check del
+          sitio que hay que apretar para aceptar algo, y al tamaño por omisión
+          de un teléfono pasa desapercibido. */}
+      <label className="campo--check campo--legal">
         <input type="checkbox" name="acepta_documentos" required />
         <span>
           Leí y acepto los <Link href="/terminos">términos y condiciones</Link> y la{' '}

@@ -10,9 +10,26 @@ guarda `tudominio.com/t/<codigo_corto>` y lo que cambia es la fila.
    recorta unos 100 ms por consulta frente a las de EE.UU.
 
 2. **Aplicar el esquema.** En el Dashboard → *SQL Editor* → *New query*, pegar
-   y ejecutar **en orden** los archivos de
-   [`supabase/migrations/`](../supabase/migrations/). Son idempotentes: se
-   pueden volver a correr sin romper nada.
+   **el contenido** de cada archivo de
+   [`supabase/migrations/`](../supabase/migrations/) y ejecutarlos **en orden**.
+   (El nombre del archivo no: el editor ejecuta SQL, no abre archivos. Pegar
+   `20260915120000_init.sql` devuelve `trailing junk after numeric literal`.)
+
+   Cada migración es idempotente **por separado**: volver a correr la misma no
+   rompe nada. Lo que no se puede es volver a correr la tanda entera sobre una
+   base que ya tenga aplicada la segunda migración o una posterior — la primera
+   crea una política sobre `auto_edicion_habilitada` y la segunda elimina esa
+   columna, así que la primera falla con `column auto_edicion_habilitada does
+   not exist`. Ante la duda, esta consulta dice en qué estado está la base:
+
+   ```sql
+   select to_regclass('public.profiles')            as tiene_profiles,
+          to_regclass('public.events')              as tiene_events,
+          to_regclass('public.cards')               as tiene_cards,
+          to_regproc('public.cuentas_sin_perfil')   as tiene_cuentas_pendientes;
+   ```
+
+   Todo en `NULL` = base limpia, se corren todas desde la primera.
 
    Con la CLI de Supabase, alternativamente:
 
@@ -38,28 +55,53 @@ guarda `tudominio.com/t/<codigo_corto>` y lo que cambia es la fila.
    "tu cuenta no tiene permisos": tener cuenta y ser admin son cosas distintas.
 
 5. **Configurar el ingreso de los clientes** (Plus y Premium). En
-   *Authentication → Providers → Email*, dejar habilitado *Email* y **dejar
-   activado** *Enable sign-ups*: lo necesita la página `/crear-cuenta`.
+   *Authentication → Sign In / Providers*, dejar habilitado *Email* y **dejar
+   activado** *Allow new users to sign up* (en el panel viejo, *Enable
+   sign-ups*): lo necesita la página `/crear-cuenta`. Ese interruptor está en la
+   página principal de la sección, arriba de la lista de proveedores, no dentro
+   del panel de *Email*.
 
    Que el registro esté abierto no abre nada: una cuenta recién creada no tiene
    perfil vinculado, y todas las políticas de RLS parten de
    `profiles.user_id = auth.uid()`, así que no puede leer ni escribir una sola
    fila. El alta real la hacés vos desde el backoffice. Conviene además dejar
-   activado *Confirm email*, para que no se creen cuentas con emails ajenos.
+   activado *Confirm email*, para que no se creen cuentas con emails ajenos: está
+   dentro del panel de *Email*, justo debajo de *Enable Email provider* — arriba
+   de los campos de contraseña, no al final.
 
    El ingreso por enlace de un solo uso sí pide `shouldCreateUser: false`: ese
    camino nunca crea cuentas, sólo abre sesión en las que ya existen.
 
-   En *Authentication → URL Configuration*, agregar a *Redirect URLs*:
+   En *Authentication → URL Configuration* hay dos campos, y hacen falta los
+   dos. Primero **Site URL**, que arranca en `http://localhost:3000` y hay que
+   cambiar por el dominio real:
 
    ```
-   https://<tu-dominio>/auth/callback
-   https://*.vercel.app/auth/callback     (para las previews)
-   http://localhost:3000/auth/callback
+   https://<tu-dominio>
    ```
 
-   Sin esto, el enlace del mail rebota. El SMTP incluido de Supabase alcanza
-   para el volumen del piloto; para producción conviene configurar uno propio.
+   Y después, en *Redirect URLs*:
+
+   ```
+   https://<tu-dominio>/**
+   https://*.vercel.app/**                (para las previews)
+   http://localhost:3000/**               (para desarrollo)
+   ```
+
+   Sin esto, el enlace del mail rebota, y rebota de la peor manera: cuando el
+   destino que pide la app no está en la lista, Supabase **no avisa** — usa el
+   *Site URL* en su lugar. Con el valor de fábrica, el cliente que confirma su
+   cuenta desde el teléfono termina en `localhost:3000`, que en su teléfono no
+   existe, y lee `otp_expired` aunque el enlace estuviera perfecto.
+
+   El comodín `/**` cubre `/auth/callback` y cualquier ruta futura; si preferís
+   ser estricto, alcanza con `/auth/callback` en cada línea.
+
+   Dos cosas más de la misma pantalla que conviene saber de antemano: el enlace
+   de confirmación vence a la hora (*Email OTP expiration*, en
+   *Providers → Email*), y el SMTP incluido de Supabase está limitado a unos
+   pocos mails por hora y sólo sirve para probar. Para el piloto hay que
+   configurar uno propio en *Project Settings → Auth → SMTP Settings*.
 
 6. **Copiar las claves.** En *Project Settings → API* (según la versión del
    panel, puede ser una sección aparte llamada *API Keys*) están los dos valores:
