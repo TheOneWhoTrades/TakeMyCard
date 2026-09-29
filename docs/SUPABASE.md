@@ -201,9 +201,16 @@ guarda `tudominio.com/t/<codigo_corto>` y lo que cambia es la fila.
    pocos clientes y el alta se acompaña por WhatsApp. No alcanza para vender sin
    acompañamiento, y ahí es donde entra el dominio con Resend.
 
-   Conviene además, en *Authentication → Rate Limits*, subir el límite de
-   *Emails per hour*, que con el SMTP de Supabase queda en 2 por hora --un
-   número pensado para ese servidor compartido de prueba y no para uno propio--.
+   El límite de envío se corrige solo al activar el SMTP propio: en
+   *Authentication → Rate Limits*, *Emails per hour* pasa de 2 --el número del
+   servidor compartido de prueba-- a 30. No hay que tocarlo a mano. Para el
+   piloto sobra; si alguna vez hiciera falta más, ese mismo campo se sube y el
+   techo real pasa a ser el de Brevo (300 por día en el plan gratuito).
+
+   **Cómo verificar que un mail salió.** Brevo registra cada envío en
+   *Transactional → Logs*, con el estado real: entregado, rebotado o marcado
+   como spam. Es el único lugar donde se distingue "no llegó" de "llegó y está
+   en la carpeta de no deseados", que desde la aplicación son indistinguibles.
 
 ## Dar de alta un cliente
 
