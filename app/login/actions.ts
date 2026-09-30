@@ -1,12 +1,13 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { destinoSeguro } from '@/lib/destino'
 import { supabaseServer } from '@/lib/supabase/server'
 
 export async function iniciarSesion(_estado: { error?: string }, formData: FormData) {
   const email = String(formData.get('email') ?? '').trim()
   const password = String(formData.get('password') ?? '')
-  const siguiente = String(formData.get('next') ?? '/admin')
+  const siguiente = destinoSeguro(String(formData.get('next') ?? ''), '/admin')
 
   if (!email || !password) return { error: 'Completá email y contraseña.' }
 
@@ -17,7 +18,9 @@ export async function iniciarSesion(_estado: { error?: string }, formData: FormD
   // confirmarle a nadie qué emails tienen cuenta.
   if (error) return { error: 'Email o contraseña incorrectos.' }
 
-  redirect(siguiente.startsWith('/') ? siguiente : '/admin')
+  // Con sólo mirar que empiece con "/", `//sitio-falso.com` pasaba: justo en el
+  // login de administradores, que es la cuenta que más vale robar.
+  redirect(siguiente)
 }
 
 export async function cerrarSesion() {

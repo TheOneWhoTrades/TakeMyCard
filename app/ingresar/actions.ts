@@ -2,23 +2,11 @@
 
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
+import { destinoSeguro } from '@/lib/destino'
 import { siteUrl } from '@/lib/env'
 import { supabaseServer } from '@/lib/supabase/server'
 
 export type EstadoIngreso = { error?: string; enviado?: boolean }
-
-/**
- * Sólo se aceptan destinos internos. Sin esta comprobación, un link del tipo
- * /ingresar?next=https://sitio-falso.com convierte nuestro login en un
- * trampolín de phishing: la persona ve nuestro dominio, ingresa, y termina en
- * otro lado creyendo que sigue en el nuestro.
- */
-function destinoSeguro(valor: string | undefined): string {
-  if (!valor) return '/panel'
-  // `//otro.com` y `/\otro.com` también son absolutos para el navegador.
-  if (!valor.startsWith('/') || valor.startsWith('//') || valor.startsWith('/\\')) return '/panel'
-  return valor
-}
 
 /**
  * Ingreso con enlace de un solo uso.
@@ -31,7 +19,7 @@ export async function enviarEnlace(
   formData: FormData,
 ): Promise<EstadoIngreso> {
   const email = String(formData.get('email') ?? '').trim().toLowerCase()
-  const siguiente = destinoSeguro(String(formData.get('next') ?? ''))
+  const siguiente = destinoSeguro(String(formData.get('next') ?? ''), '/panel')
 
   if (!email || !email.includes('@')) return { error: 'Escribí un email válido.' }
 
@@ -70,7 +58,7 @@ export async function ingresarConClave(
 ): Promise<EstadoIngreso> {
   const email = String(formData.get('email') ?? '').trim().toLowerCase()
   const password = String(formData.get('password') ?? '')
-  const siguiente = destinoSeguro(String(formData.get('next') ?? ''))
+  const siguiente = destinoSeguro(String(formData.get('next') ?? ''), '/panel')
 
   if (!email || !password) return { error: 'Completá email y contraseña.' }
 

@@ -38,6 +38,9 @@ jobs:
       - name: Límite del beacon de analítica
         run: npm run test:evento
 
+      - name: Redirección segura después del ingreso
+        run: npm run test:destino
+
       - name: Políticas de RLS
         # El script levanta un Postgres efímero: no toca el proyecto Supabase
         # real, así que no hacen falta credenciales.

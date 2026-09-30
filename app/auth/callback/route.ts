@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { destinoSeguro } from '@/lib/destino'
 import { supabaseServer } from '@/lib/supabase/server'
 
 /**
@@ -14,17 +15,9 @@ import { supabaseServer } from '@/lib/supabase/server'
  */
 export const dynamic = 'force-dynamic'
 
-/** Igual que en el formulario de ingreso: sólo se aceptan rutas internas. */
-function destinoSeguro(valor: string | null): string {
-  if (!valor) return '/panel'
-  // `//otro.com` y `/\otro.com` también son absolutos para el navegador.
-  if (!valor.startsWith('/') || valor.startsWith('//') || valor.startsWith('/\\')) return '/panel'
-  return valor
-}
-
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl
-  const destino = destinoSeguro(searchParams.get('next'))
+  const destino = destinoSeguro(searchParams.get('next'), '/panel')
   const esAlta = searchParams.get('alta') === '1'
 
   const invalido = `${origin}/ingresar?error=enlace-invalido`
