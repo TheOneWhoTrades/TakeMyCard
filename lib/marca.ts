@@ -10,8 +10,12 @@
 export const MARCA = {
   nombre: 'TakeMyCard',
   eslogan: 'La revolución de las tarjetas personales',
-  ciudad: 'San Luis',
-  provincia: 'San Luis, Argentina',
+  /**
+   * Alcance comercial. Es el país y no una ciudad a propósito: vendemos en
+   * cualquier provincia, y un "Hechas en San Luis" en la portada le decía a un
+   * cliente de Buenos Aires que el servicio no era para él. Dónde está
+   * radicado legalmente el negocio es otro dato: LEGAL.radicacion.
+   */
   pais: 'Argentina',
   /**
    * Dominio de la marca, sólo para mostrar en textos de venta ("tudominio/tu-nombre").
@@ -46,6 +50,12 @@ export const LEGAL = {
    * sola persona dejaría el trámite colgado si esa persona no está.
    */
   emailPrivacidad: 'proyectotarjetanfc@gmail.com' as string | null,
+  /**
+   * Dónde está radicado el proyecto. Es un dato de identidad del oferente, no
+   * una zona de venta: por eso vive acá y no en MARCA, y sólo lo leen las
+   * páginas legales. Que vendamos en todo el país no lo cambia.
+   */
+  radicacion: 'San Luis, Argentina',
   /** Desde cuándo rige esta versión de los textos legales. */
   vigenteDesde: '2026-09-22',
   /** Jurisdicción para los términos. */
@@ -304,7 +314,7 @@ export const PASOS = [
   {
     titulo: 'Armamos tu página y tu tarjeta',
     texto:
-      'Te mostramos la página antes de imprimir nada. Cuando le das el visto bueno, grabamos el chip y te entregamos las dos tarjetas en mano.',
+      'Te mostramos la página antes de imprimir nada. Cuando le das el visto bueno, grabamos el chip y te entregamos las dos tarjetas en mano o te las enviamos.',
   },
   {
     titulo: 'La acercás a un celular',

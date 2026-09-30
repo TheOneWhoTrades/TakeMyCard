@@ -6,7 +6,7 @@ guarda `tudominio.com/t/<codigo_corto>` y lo que cambia es la fila.
 ## Puesta en marcha (una sola vez)
 
 1. **Crear el proyecto** en [supabase.com](https://supabase.com). Región
-   recomendada: `South America (São Paulo)` — es la más cercana a San Luis y
+   recomendada: `South America (São Paulo)` — es la más cercana a Argentina y
    recorta unos 100 ms por consulta frente a las de EE.UU.
 
 2. **Aplicar el esquema.** En el Dashboard → *SQL Editor* → *New query*, pegar

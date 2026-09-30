@@ -6,7 +6,7 @@ export function PieSitio() {
   return (
     <footer className="pie">
       <p>
-        © {new Date().getFullYear()} {MARCA.nombre} · {MARCA.provincia}
+        © {new Date().getFullYear()} {MARCA.nombre} · {MARCA.pais}
       </p>
       <nav className="pie__links">
         <Link href="/privacidad">Privacidad</Link>

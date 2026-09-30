@@ -87,7 +87,7 @@ export function EditorContacto({
           type="text"
           name="direccion"
           defaultValue={contacto?.direccion ?? ''}
-          placeholder="Av. Illia 350, San Luis"
+          placeholder="Av. Belgrano 1234, Ciudad"
         />
       </label>
 

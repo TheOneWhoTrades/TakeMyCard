@@ -26,11 +26,11 @@ const newsreader = Newsreader({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: {
-    default: `${MARCA.nombre} · Tarjetas personales con NFC en ${MARCA.ciudad}`,
+    default: `${MARCA.nombre} · Tarjetas personales con NFC en ${MARCA.pais}`,
     template: `%s · ${MARCA.nombre}`,
   },
   description:
-    `Tarjetas personales con chip NFC para profesionales de ${MARCA.ciudad}. ` +
+    'Tarjetas personales con chip NFC para profesionales de todo el país. ' +
     'La acercás a un celular y se abre tu página: tus contactos, tus redes y tu ' +
     'agenda, sin apps y sin tipear nada.',
   applicationName: MARCA.nombre,

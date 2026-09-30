@@ -1,7 +1,7 @@
 # TakeMyCard
 
 Plataforma link-in-bio multi-tenant para tarjetas personales con NFC, para
-profesionales de San Luis, Argentina.
+profesionales de todo el país.
 
 Cada profesional tiene una página pública en `tudominio.com/<slug>`. La tarjeta
 física **no** guarda esa dirección: guarda un **código corto** (`/t/<codigo>`)
@@ -243,3 +243,22 @@ solo y no hay que acordarse de nada.
       un aviso sin romper la tarjeta física ni perder los datos.
 - [ ] Definir si alguna función del producto usa IA. Hoy ninguna la usa, y los
       textos de venta no la mencionan.
+- [ ] **Definir las condiciones del envío.** La landing y el paso 2 ya
+      prometen «entrega en mano o envío a todo el país», pero no está decidido
+      quién paga el envío, con qué correo ni en qué plazo. Antes de cobrarle a
+      alguien fuera de San Luis, eso tiene que estar en los términos: el
+      derecho de arrepentimiento corre desde la entrega, y un envío sin fecha
+      deja ese plazo sin punto de partida.
+
+## Pendiente de diseño
+
+Se trabaja en una sesión aparte, con herramientas de diseño.
+
+- [ ] **Logo.** El que hay (`components/Logo.tsx`) es provisorio. Cuando esté
+      el definitivo, reemplaza al actual en ese mismo componente: todo el sitio
+      lo toma de ahí.
+- [ ] **Identidad visual y animaciones de la landing.** Las secciones de la
+      landing ya se pliegan y despliegan (son `<details>` nativos, sin
+      JavaScript); la transición al abrirlas es lo que falta. Si se agregan
+      animaciones, respetar `prefers-reduced-motion`: a quien tiene el
+      movimiento reducido en el sistema, la página no tiene que moverse.

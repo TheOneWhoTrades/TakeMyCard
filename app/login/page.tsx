@@ -1,5 +1,8 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { destinoSeguro } from '@/lib/destino'
 import { MARCA } from '@/lib/marca'
+import { supabaseServer } from '@/lib/supabase/server'
 import { FormularioLogin } from './formulario'
 
 export const metadata = { title: 'Administración', robots: { index: false } }
@@ -10,6 +13,23 @@ export default async function PaginaLogin({
   searchParams: Promise<{ next?: string; error?: string }>
 }) {
   const { next, error } = await searchParams
+
+  // Un admin con la sesión abierta va directo al backoffice. Sólo un admin: si
+  // redirigiera cualquier sesión, un cliente que llega acá iría a /admin, que lo
+  // devuelve acá por no ser admin, y así para siempre.
+  const supabase = await supabaseServer()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (user) {
+    const { data: admin } = await supabase
+      .from('admin_users')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (admin) redirect(destinoSeguro(next, '/admin'))
+  }
 
   return (
     <main className="login">

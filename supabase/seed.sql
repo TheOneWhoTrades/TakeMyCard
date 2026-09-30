@@ -13,7 +13,7 @@ values (
   'estudio-demo',
   'Estudio Álvarez & Asociados',
   'Contadores Públicos · Impuestos y sociedades',
-  'Asesoramiento impositivo, laboral y societario para pymes y monotributistas de San Luis. Atendemos con turno, en el estudio o por videollamada.',
+  'Asesoramiento impositivo, laboral y societario para pymes y monotributistas. Atendemos con turno, en el estudio o por videollamada.',
   'premium',
   'bosque',
   'editorial',
@@ -39,7 +39,7 @@ from public.profiles p,
   ('whatsapp',  'Escribinos por WhatsApp',   '2664123456',                             1),
   ('agenda',    'Pedir turno',               'https://calendly.com/estudio-demo',      2),
   ('telefono',  'Llamar al estudio',         '2664123456',                             3),
-  ('ubicacion', 'Cómo llegar',               'Av. Illia 350, San Luis, Argentina',     4),
+  ('ubicacion', 'Cómo llegar',               'Av. Belgrano 1234, Argentina',     4),
   ('linkedin',  'Seguinos en LinkedIn',      'company/estudio-demo',                   5),
   ('web',       'Nuestro sitio',             'https://ejemplo-estudio.com.ar',         6),
   ('alias_cbu', 'Alias para transferencias', 'estudio.demo.sl',                        7)
@@ -52,7 +52,7 @@ select
   p.id,
   '2664123456',
   'contacto@ejemplo-estudio.com.ar',
-  'Av. Illia 350, San Luis, Argentina',
+  'Av. Belgrano 1234, Argentina',
   '{"linkedin": "company/estudio-demo"}'::jsonb
 from public.profiles p
 where p.slug = 'estudio-demo'

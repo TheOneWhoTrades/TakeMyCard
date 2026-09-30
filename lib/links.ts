@@ -18,7 +18,7 @@ export const LINK_META: Record<
   youtube:   { nombre: 'YouTube',    icono: '▶️', placeholder: '@canal',                     ayuda: 'Canal o URL completa.' },
   web:       { nombre: 'Sitio web',  icono: '🌐', placeholder: 'https://ejemplo.com.ar',     ayuda: 'URL completa.' },
   agenda:    { nombre: 'Agenda / turnos', icono: '📅', placeholder: 'https://calendly.com/…', ayuda: 'URL del sistema de turnos.' },
-  ubicacion: { nombre: 'Ubicación',  icono: '📍', placeholder: 'Av. Illia 350, San Luis',    ayuda: 'Dirección, o URL de Google Maps.' },
+  ubicacion: { nombre: 'Ubicación',  icono: '📍', placeholder: 'Av. Belgrano 1234, Ciudad', ayuda: 'Dirección, o URL de Google Maps.' },
   alias_cbu: { nombre: 'Alias / CBU', icono: '🏦', placeholder: 'mi.alias.mp',               ayuda: 'No es un link: se muestra con botón de copiar.' },
   otro:      { nombre: 'Otro',       icono: '🔗', placeholder: 'https://…',                  ayuda: 'URL completa.' },
 }

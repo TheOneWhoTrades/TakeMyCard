@@ -39,7 +39,7 @@ export default function PaginaPrivacidad() {
       {esPiloto() ? (
         <>
           <p>
-            {MARCA.nombre} es un proyecto radicado en {MARCA.provincia}, actualmente en
+            {MARCA.nombre} es un proyecto radicado en {LEGAL.radicacion}, actualmente en
             etapa de <strong>prueba piloto</strong>: el servicio todavía no se
             comercializa y opera con un único cliente, sin cargo. Los datos completos de
             identificación del responsable (razón social, CUIT y domicilio legal) se
@@ -61,7 +61,7 @@ export default function PaginaPrivacidad() {
             este sitio es{' '}
             <DatoLegal valor={LEGAL.titular} que="el titular o razón social" />, CUIT{' '}
             <DatoLegal valor={LEGAL.cuit} que="el CUIT" />, con domicilio en{' '}
-            <DatoLegal valor={LEGAL.domicilio} que="el domicilio" />, {MARCA.provincia}
+            <DatoLegal valor={LEGAL.domicilio} que="el domicilio" />, {LEGAL.radicacion}
             {' '}(en adelante, «{MARCA.nombre}», «nosotros»).
           </p>
           <p>

@@ -18,7 +18,7 @@ export default function PaginaTerminos() {
       {esPiloto() ? (
         <>
           <p>
-            {MARCA.nombre} es un proyecto radicado en {MARCA.provincia}, actualmente en
+            {MARCA.nombre} es un proyecto radicado en {LEGAL.radicacion}, actualmente en
             etapa de <strong>prueba piloto</strong>. El servicio todavía no se
             comercializa: los precios que figuran en este sitio son los previstos para el
             lanzamiento y no constituyen, por ahora, una oferta vinculante.
@@ -39,7 +39,7 @@ export default function PaginaTerminos() {
             {MARCA.nombre}, prestados por{' '}
             <DatoLegal valor={LEGAL.titular} que="el titular o razón social" />, CUIT{' '}
             <DatoLegal valor={LEGAL.cuit} que="el CUIT" />, con domicilio en{' '}
-            <DatoLegal valor={LEGAL.domicilio} que="el domicilio" />, {MARCA.provincia}.
+            <DatoLegal valor={LEGAL.domicilio} que="el domicilio" />, {LEGAL.radicacion}.
           </p>
           <p>
             Al contratar cualquiera de los planes o al usar el sitio, aceptás estas

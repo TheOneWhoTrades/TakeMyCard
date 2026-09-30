@@ -1,6 +1,9 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { Marca } from '@/components/Logo'
+import { destinoSeguro } from '@/lib/destino'
 import { MARCA } from '@/lib/marca'
+import { supabaseServer } from '@/lib/supabase/server'
 import { FormularioIngreso } from './formulario'
 
 export const metadata = {
@@ -14,6 +17,24 @@ export default async function PaginaIngresar({
   searchParams: Promise<{ next?: string; error?: string; aviso?: string }>
 }) {
   const { next, error, aviso } = await searchParams
+
+  // Con la sesión abierta, este formulario no tiene nada que hacer. Antes se
+  // mostraba igual, y quien tocaba «Ingresar a mi panel» con la sesión viva
+  // veía el login y creía que lo habían echado: la sesión duraba meses, pero
+  // parecía que había que ingresar cada vez.
+  const supabase = await supabaseServer()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (user) {
+    const { data: admin } = await supabase
+      .from('admin_users')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    redirect(admin ? '/admin' : destinoSeguro(next, '/panel'))
+  }
 
   return (
     <main className="login">

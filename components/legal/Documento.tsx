@@ -25,7 +25,7 @@ export function Documento({
           <Marca className="marca" />
         </Link>
         <p className="masthead__meta">
-          {MARCA.provincia}
+          {MARCA.pais}
           <br />
           Est. 2026
         </p>
