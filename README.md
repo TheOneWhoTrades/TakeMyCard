@@ -231,9 +231,10 @@ solo y no hay que acordarse de nada.
       hora contando todo: con dos altas la misma tarde, el tercer cliente se
       queda sin el mail de confirmación y sin forma de saber por qué. Durante el
       piloto se usa **Brevo** con el Gmail del proyecto como remitente
-      verificado, que no necesita dominio (`docs/SUPABASE.md`, paso 7); como
-      sale de un `@gmail.com`, Gmail lo manda a correo no deseado seguido, y por
-      eso el aviso de revisar spam está en `/crear-cuenta` y en `/ingresar`. El
+      verificado, que no necesita dominio (`docs/SUPABASE.md`, paso 7). Probado
+      el 30/09/2026 y andando: el mail llega a la bandeja principal. Como sale
+      de un `@gmail.com` no autentica, así que eso no está garantizado y el
+      aviso de revisar spam se queda en `/crear-cuenta` y en `/ingresar`. El
       destino es **Resend** con dominio propio, que es lo que saca el mail de
       spam. Migrar antes de vender sin acompañar el alta por WhatsApp.
 - [ ] Definir precio de las tarjetas de repuesto.

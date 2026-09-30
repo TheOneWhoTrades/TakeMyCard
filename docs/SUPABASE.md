@@ -192,10 +192,16 @@ guarda `tudominio.com/t/<codigo_corto>` y lo que cambia es la fila.
    **Lo que este puente no resuelve.** Desde febrero de 2024 Gmail endureció la
    autenticación: un mensaje cuyo remitente dice `@gmail.com` pero sale por un
    servidor que no es de Google no puede firmarse con DKIM de gmail.com ni
-   figura en el SPF de Gmail, así que no autentica y tiene muchas chances de ir
-   a correo no deseado. Como casi todos los clientes usan Gmail, el aviso
-   "revisá el correo no deseado" de `/crear-cuenta` y de `/ingresar` no es una
-   formalidad: es parte del funcionamiento esperado mientras dure el puente.
+   figura en el SPF de Gmail. Es decir que estos mails no autentican, y quedan
+   sujetos a lo que cada proveedor decida hacer con un mensaje no autenticado.
+
+   En la prueba de puesta en marcha (30/09/2026, destinatario ajeno al
+   proyecto) el mail llegó a la bandeja principal. Eso confirma que el puente
+   funciona, pero no garantiza el caso general: la decisión de spam depende del
+   destinatario, de su historial y de cada proveedor, y puede cambiar sin que
+   nosotros toquemos nada. Por eso el aviso "revisá el correo no deseado" de
+   `/crear-cuenta` y de `/ingresar` se queda mientras dure el puente, y por eso
+   conviene mirar los logs de Brevo ante el primer reclamo en vez de suponer.
 
    Decisión tomada con esto a la vista: durante el piloto alcanza, porque son
    pocos clientes y el alta se acompaña por WhatsApp. No alcanza para vender sin
