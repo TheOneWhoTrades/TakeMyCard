@@ -46,6 +46,8 @@ export default async function RedireccionTarjeta({ params }: Props) {
     return (
       <main className="aviso">
         <p className="aviso__emoji">⏳</p>
+        {/* scripts/sonda.sh busca «temporalmente indisponible» para avisar que la
+            base no responde: si cambia este texto, hay que cambiarlo allá. */}
         <h1 className="aviso__titulo">Esta tarjeta está temporalmente indisponible</h1>
         <p className="aviso__texto">
           No pudimos abrirla ahora. Probá de nuevo en unos minutos.
@@ -62,6 +64,8 @@ export default async function RedireccionTarjeta({ params }: Props) {
   return (
     <main className="aviso">
       <p className="aviso__emoji">🔍</p>
+      {/* scripts/sonda.sh espera «No encontramos esta tarjeta» como señal de que
+          todo anda: si cambia este texto, hay que cambiarlo allá. */}
       <h1 className="aviso__titulo">No encontramos esta tarjeta</h1>
       <p className="aviso__texto">
         El código <strong>{codigo.slice(0, 16)}</strong> no corresponde a ninguna tarjeta

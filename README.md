@@ -224,6 +224,13 @@ solo y no hay que acordarse de nada.
       personal no comercial, y publicar precios ya cae en su definición de uso
       comercial. Vercel lo aplica pausando el despliegue, y con el despliegue
       caído las tarjetas ya entregadas dejan de resolver. Ver `docs/DEPLOY.md`.
+- [ ] **Supabase Pro antes de cobrar.** El plan gratuito pausa el proyecto
+      entero tras 7 días sin consultas --con el proyecto pausado no abre
+      ninguna tarjeta-- y no tiene backups. Mientras dure el piloto, la sonda
+      diaria (`.github/workflows/sonda.yml`) evita la pausa haciendo una
+      consulta por día y avisa por mail si el sitio o la base se caen. Es un
+      parche: no agrega backups, y GitHub la desactiva en un repositorio
+      público si pasa 60 días sin actividad.
 - [ ] Dominio propio y `NEXT_PUBLIC_SITE_URL`, **antes** de mandar a imprimir.
       El dominio también destraba el SMTP propio: Resend sólo deja mandar desde
       un dominio cuyo DNS controlamos, y un subdominio de `vercel.app` no lo es.

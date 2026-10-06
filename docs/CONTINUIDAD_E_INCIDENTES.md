@@ -54,6 +54,7 @@ Clasificarlo al menos como uno de estos casos:
 | Cuenta administrativa comprometida | Evitar cambios adicionales | Quitar sesiones/accesos desde el proveedor y rotar credenciales afectadas. |
 | Perfil con contenido incorrecto o riesgoso | Detener la publicación | Pausar el perfil; no borrar un perfil con tarjeta física registrada. |
 | Sitio, DNS o proveedor caído | Recuperar la tarjeta pública | Revisar estado del proveedor y del dominio; no cambiar la URL NFC sin un plan de redirección probado. |
+| Proyecto de Supabase pausado (plan gratuito, 7 días sin consultas) | Que las tarjetas vuelvan a abrir | Reactivarlo desde el panel de Supabase (*Restore project*). Después revisar por qué no corrió la sonda diaria (`.github/workflows/sonda.yml`): GitHub la desactiva en repos públicos tras 60 días sin actividad. |
 | Posible acceso no autorizado a datos | Contener y determinar alcance | Restringir accesos, conservar evidencia y evaluar aviso a afectados y autoridad con asesoramiento profesional. |
 | Error de datos o migración | Preservar recuperabilidad | Detener escrituras riesgosas, verificar backup y restaurar sólo en un entorno o bajo un plan documentado. |
 

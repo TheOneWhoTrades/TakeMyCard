@@ -1,0 +1,51 @@
+name: Sonda diaria del sitio
+
+# Una vez por día, hace lo mismo que una tarjeta NFC: pide /t/<código> al sitio
+# de producción. Sirve para dos cosas:
+#
+# 1. Mantener despierta la base. En el plan gratuito, Supabase pausa el
+#    proyecto entero --todos los perfiles a la vez, no uno por uno-- después de
+#    7 días sin consultas. Con el proyecto pausado, ninguna tarjeta abre hasta
+#    que alguien lo reactive a mano. Con poco tráfico, como en el piloto, una
+#    semana sin que nadie apoye una tarjeta es perfectamente posible. Este
+#    pedido hace una consulta por día, y con una alcanza: la pausa se mide por
+#    proyecto, no por perfil.
+#
+# 2. Avisar si algo se cae. Si la sonda falla, GitHub le manda un mail a quien
+#    administra el repositorio, diciendo si el problema es la base (Supabase)
+#    o el sitio (Vercel).
+#
+# Dos límites que conviene saber:
+#
+# · En un repositorio público, GitHub desactiva solo los workflows programados
+#   si el repositorio pasa 60 días sin actividad. Si eso pasa, se reactiva
+#   desde la pestaña Actions con un clic.
+# · No reemplaza a Supabase Pro para vender: el plan pago no se pausa y tiene
+#   backups, que el gratuito no tiene.
+#
+# Cuando haya dominio propio, cambiar SITIO. La dirección de vercel.app sigue
+# funcionando igual, así que no es urgente.
+
+on:
+  schedule:
+    # 10:23 UTC = 07:23 en Argentina. No a la hora en punto: a esa hora GitHub
+    # tiene más demora para arrancar los programados.
+    - cron: '23 10 * * *'
+  # Para correrla a mano desde la pestaña Actions -> Run workflow.
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+env:
+  SITIO: https://take-my-card.vercel.app
+
+jobs:
+  sonda:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pedir una tarjeta, como lo haría un teléfono
+        run: bash scripts/sonda.sh "$SITIO"
