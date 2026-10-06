@@ -620,9 +620,17 @@ h1, h2, h3 {
   color: var(--acento);
 }
 
-/* Con portada, la foto monta sobre ella: el gesto clásico del perfil. */
+/* Con portada, la foto monta sobre ella: el gesto clásico del perfil.
+
+   El position no es decorativo. La portada está posicionada (lo necesita la
+   imagen con `fill`), y el navegador pinta todo lo posicionado por encima de
+   lo que no lo está, sin importar el orden en la página. Sin esto, el margen
+   negativo metía la foto *debajo* de la portada y le cortaba la parte de
+   arriba: justo la cara. */
 .perfil--con-portada .perfil__foto,
 .perfil--con-portada .perfil__inicial {
+  position: relative;
+  z-index: 1;
   margin-top: -3.6rem;
   border: 3px solid var(--fondo);
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
