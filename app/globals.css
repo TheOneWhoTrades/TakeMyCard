@@ -390,6 +390,216 @@ h1, h2, h3 {
 .columna__titulo { font-size: 1.22rem; margin: 0 0 0.5rem; }
 .columna p { margin: 0; color: var(--tinta-media); font-size: 0.97rem; }
 
+/* --- Recorrido visual del NFC -------------------------------------------- */
+
+.mundo__paso { min-width: 0; }
+
+.mundo__escena {
+  height: 12rem;
+  display: grid;
+  place-items: center;
+  margin: 0 0 1.15rem;
+  perspective: 42rem;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 74%, color-mix(in srgb, var(--verde) 12%, transparent) 0 30%, transparent 70%);
+}
+
+.mundo__isla {
+  position: relative;
+  width: 12rem;
+  height: 7.4rem;
+  transform: rotateX(54deg) rotateZ(-34deg);
+  transform-style: preserve-3d;
+  border: 1px solid color-mix(in srgb, var(--verde) 45%, var(--regla));
+  background: linear-gradient(145deg, var(--papel-alto), var(--papel-hondo));
+  box-shadow: 1rem 1.15rem 0 color-mix(in srgb, var(--verde) 13%, var(--papel-hondo));
+}
+
+.mundo__isla::before,
+.mundo__isla::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 0.55rem;
+  transform: translateY(0.55rem) skewX(-45deg);
+  transform-origin: top;
+  border: 1px solid color-mix(in srgb, var(--verde) 30%, var(--regla));
+  background: var(--papel-hondo);
+}
+
+.mundo__isla::after {
+  inset: 0 0 0 auto;
+  width: 0.55rem;
+  height: auto;
+  transform: translateX(0.55rem) skewY(-45deg);
+  transform-origin: left;
+  background: color-mix(in srgb, var(--verde) 12%, var(--papel-hondo));
+}
+
+.mundo__tarjeta {
+  position: absolute;
+  width: 4.9rem;
+  height: 3.1rem;
+  left: 3.35rem;
+  top: 1.7rem;
+  border: 1px solid var(--verde);
+  border-radius: 3px;
+  background: linear-gradient(135deg, var(--papel-alto) 0 64%, color-mix(in srgb, var(--verde) 12%, var(--papel-alto)) 64%);
+  box-shadow: 0.35rem 0.45rem 0 color-mix(in srgb, var(--tinta) 15%, transparent);
+  transform: translateZ(1.2rem);
+}
+
+.mundo__sello {
+  position: absolute;
+  z-index: 1;
+  left: 4.2rem;
+  top: 2.55rem;
+  color: var(--verde);
+  font: 700 0.72rem/1 var(--sans);
+  letter-spacing: 0.13em;
+  transform: translateZ(1.35rem);
+}
+
+.mundo__dato {
+  position: absolute;
+  z-index: 1;
+  left: 3.8rem;
+  top: 3.25rem;
+  width: 1.8rem;
+  height: 1px;
+  background: var(--regla-fuerte);
+  transform: translateZ(1.35rem);
+}
+
+.mundo__dato--dos { top: 3.5rem; width: 1.2rem; background: var(--regla); }
+
+.mundo__telefono {
+  position: absolute;
+  z-index: 2;
+  left: 4.35rem;
+  top: 0.55rem;
+  width: 3.2rem;
+  height: 5.6rem;
+  padding: 0.28rem;
+  border: 2px solid var(--tinta);
+  border-radius: 0.55rem;
+  background: var(--papel-alto);
+  box-shadow: 0.35rem 0.4rem 0 color-mix(in srgb, var(--tinta) 15%, transparent);
+  transform: translateZ(1.35rem);
+}
+
+.mundo__pantalla {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.3rem;
+  background:
+    linear-gradient(var(--verde) 0 0) 50% 76% / 1.5rem 0.3rem no-repeat,
+    radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--tierra) 70%, var(--ocre)) 0 0.38rem, transparent 0.42rem),
+    linear-gradient(var(--regla) 0 0) 50% 53% / 1.55rem 1px no-repeat,
+    var(--papel-hondo);
+}
+
+.mundo__ondas {
+  position: absolute;
+  z-index: 1;
+  left: 2.45rem;
+  top: 2.65rem;
+  width: 1.3rem;
+  height: 1.3rem;
+  border: 2px solid var(--verde-claro);
+  border-left-color: transparent;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  transform: translateZ(1.5rem) rotate(45deg);
+  box-shadow: 0.35rem -0.35rem 0 -0.2rem var(--papel-alto), 0.45rem -0.45rem 0 -0.05rem var(--verde-claro);
+}
+
+.mundo__tarjeta--chica {
+  z-index: 3;
+  left: 1.35rem;
+  top: 2.35rem;
+  width: 3rem;
+  height: 1.9rem;
+  transform: translateZ(1.7rem) rotateZ(-9deg);
+}
+
+.mundo__perfil {
+  position: absolute;
+  z-index: 2;
+  left: 4.2rem;
+  top: 0.85rem;
+  width: 3.8rem;
+  height: 5rem;
+  padding: 0.45rem;
+  border: 1px solid var(--regla-fuerte);
+  background: var(--papel-alto);
+  box-shadow: 0.35rem 0.4rem 0 color-mix(in srgb, var(--tinta) 15%, transparent);
+  transform: translateZ(1.3rem);
+}
+
+.mundo__avatar {
+  display: block;
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: 0 auto 0.25rem;
+  border: 1px solid var(--tierra);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tierra) 35%, var(--papel-alto));
+}
+
+.mundo__linea {
+  display: block;
+  width: 1.5rem;
+  height: 1px;
+  margin: 0.2rem auto;
+  background: var(--regla-fuerte);
+}
+
+.mundo__linea--larga { width: 2rem; height: 2px; }
+
+.mundo__boton {
+  display: block;
+  width: 2.1rem;
+  height: 0.45rem;
+  margin: 0.5rem auto 0;
+  background: var(--verde);
+}
+
+.mundo__destello {
+  position: absolute;
+  top: 1rem;
+  right: 2.35rem;
+  color: var(--ocre);
+  font-size: 1.4rem;
+  transform: translateZ(2rem);
+}
+
+@media (min-width: 46rem) {
+  .mundo__paso { padding-top: 0.5rem; }
+  .mundo__escena { height: 13rem; }
+}
+
+/* Los navegadores compatibles revelan cada isla mientras entra en pantalla.
+   La ilustración queda visible sin animación en navegadores anteriores. */
+@supports (animation-timeline: view()) {
+  .mundo__isla {
+    animation: mundo-vuelo linear both;
+    animation-timeline: view(block);
+    animation-range: entry 8% cover 38%;
+  }
+
+  @keyframes mundo-vuelo {
+    from { opacity: 0.5; transform: translateY(1.3rem) rotateX(62deg) rotateZ(-42deg) scale(0.82); }
+    to { opacity: 1; transform: translateY(0) rotateX(54deg) rotateZ(-34deg) scale(1); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mundo__isla { animation: none !important; }
+}
+
 /* --- Planes ----------------------------------------------------------------- */
 
 .planes {
